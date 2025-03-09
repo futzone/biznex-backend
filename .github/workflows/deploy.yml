@@ -1,0 +1,43 @@
+name: Biznex API CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        
+      - name: Setup SSH Keys and known_hosts
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+          
+      - name: Test SSH Connection
+        run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} echo "SSH connection successful"
+        
+      - name: Connecting to Timeweb server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: 22
+          debug: true
+          script: |
+            cd biznex-backend/
+            git fetch origin main
+            git reset --hard origin/main
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt --no-cache-dir
+            sudo systemctl restart fastapi
+            sudo systemctl restart nginx
+            echo "✅ Deployment done!"

@@ -5,8 +5,9 @@ from app.core.settings import get_settings
 settings = get_settings()
 
 # Firebase'ni sozlash
-if not firebase_admin._apps:
-    cred = credentials.Certificate({
+try:
+    if not firebase_admin._apps:
+        cred = credentials.Certificate({
         "type": settings.FIREBASE_TYPE,
         "project_id": settings.FIREBASE_PROJECT_ID,
         "private_key_id": settings.FIREBASE_PRIVATE_KEY_ID,
@@ -19,7 +20,9 @@ if not firebase_admin._apps:
         "client_x509_cert_url": settings.FIREBASE_CLIENT_X509_CERT_URL,
         "universe_domain": settings.FIREBASE_UNIVERSE_DOMAIN
     })
-    firebase_admin.initialize_app(cred)
+        firebase_admin.initialize_app(cred)
+except ValueError:
+    pass
 
 # Push notification yuborish
 def send_push_notification(

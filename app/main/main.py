@@ -50,7 +50,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 settings: Settings = get_settings()
 
-
 scheduler = AsyncIOScheduler()
 
 
@@ -60,12 +59,15 @@ async def start_scheduler():
     scheduler.add_job(backup_database, 'interval', minutes=3600)
     scheduler.start()
 
+
 def create_app() -> CORSMiddleware:
     logging.basicConfig(level=logging.INFO)
     app = FastAPI(
+        docs_url="/MTFTc0t2czE5WUpLTnJGK21Qd00vajVrb3g0NWRTUTA5a2MwVTVnVzkydVUrOWVnWnlxbjlZK1YwL0tUU3VTMw/docs",
         title=settings.PROJECT_NAME + " API",
         description=settings.PROJECT_DESCRIPTION,
         version=settings.PROJECT_VERSION,
+
     )
     sio = socketio.AsyncServer(
         async_mode='asgi',
@@ -73,9 +75,9 @@ def create_app() -> CORSMiddleware:
         logger=True,
         engineio_logger=True
     )
-    
+
     app.mount("/socket.io", socketio.ASGIApp(sio))
-    
+
     @app.on_event("startup")
     async def startup_event():
         await register_chat_handlers(sio, app)
@@ -189,5 +191,3 @@ def create_app() -> CORSMiddleware:
         allow_headers=["*"],
         expose_headers=["*"],
     )
-
-

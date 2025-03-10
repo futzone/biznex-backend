@@ -155,9 +155,9 @@ def create_app() -> CORSMiddleware:
     v1_router.include_router(
         report_router, prefix="/report", tags=["Report"]
     )
-    v1_router.include_router(
-        utils_router, prefix="/utils", tags=["Utils"]
-    )
+    # v1_router.include_router(
+    #     utils_router, prefix="/utils", tags=["Utils"]
+    # )
     v1_router.include_router(
         notification_router, prefix="/notification", tags=["Notification"]
     )

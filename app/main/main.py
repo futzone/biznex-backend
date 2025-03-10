@@ -1,24 +1,17 @@
-import asyncio
-from contextlib import asynccontextmanager
 import os
 import logging
 from fastapi import APIRouter, FastAPI
 from fastapi.staticfiles import StaticFiles
-from socketio import AsyncServer
 import socketio
-
 from app.api.routers.chat import register_chat_handlers
 from app.api.utils.backup_database import backup_database
 from app.core.settings import get_settings, Settings
 from starlette.middleware.cors import CORSMiddleware
-
 from app.api.routers.role import router as role_router
 from app.api.routers.warehouse import router as warehouse_router
 from app.api.routers.product.category import router as category_router
 from app.api.routers.product.subcategory import router as subcategory_router
-from app.api.routers.product.product_information import (
-    router as product_information_router,
-)
+from app.api.routers.product.product_information import router as product_information_router
 from app.api.routers.product.rating import router as rating_router
 from app.api.routers.product.rating_picture import router as rating_picture_router
 from app.api.routers.product.wishlist import router as wishlist_router
@@ -40,16 +33,12 @@ from app.api.routers.orderitem import router as order_item_router
 from app.api.routers.report import router as report_router
 from app.api.routers.file import router as file_router
 from app.api.routers.chat import router as chat_router
-
 from app.api.routers.notification.notification import router as notification_router
 from app.api.routers.device.device import router as device_router
-
 from app.api.routers.utils import router as utils_router
-
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 settings: Settings = get_settings()
-
 scheduler = AsyncIOScheduler()
 
 
@@ -166,9 +155,9 @@ def create_app() -> CORSMiddleware:
     v1_router.include_router(
         report_router, prefix="/report", tags=["Report"]
     )
-    v1_router.include_router(
-        utils_router, prefix="/utils", tags=["Utils"]
-    )
+    # v1_router.include_router(
+    #     utils_router, prefix="/utils", tags=["Utils"]
+    # )
     v1_router.include_router(
         notification_router, prefix="/notification", tags=["Notification"]
     )

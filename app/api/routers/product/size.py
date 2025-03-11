@@ -68,8 +68,9 @@ async def create_size(
 
         return await controller.create_size(data)
     except Exception as e:
+        print("\n\n\n\n HEADERS: ")
         print(request.headers)
-
+        print("\n\n\n\n")
 
 
 @router.put(

@@ -72,7 +72,7 @@ async def create_size(
         print("\n\n\n\n HEADERS: ")
         print(request.headers)
         print("\n\n\n\n")
-        raise HTTPException(status_code=500, detail=f"{e}\n\n{request.headers}\n\n")
+        raise HTTPException(status_code=500, detail=f"{e}\n\n{request.headers}\n\n{request.scope}\n\n{request.state}\n\n{request.json()}")
 
 
 @router.put(

@@ -54,18 +54,22 @@ async def create_size(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ):
-    print(request.headers)
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    try:
+        print(request.headers)
+        warehouse_id = int(request.headers.get('warehouse_id'))
 
-    await check_permission(
-        session=session,
-        admin_id=current_admin.id,
-        warehouse_id=warehouse_id,
-        model_name="size",
-        action="create",
-    )
+        await check_permission(
+            session=session,
+            admin_id=current_admin.id,
+            warehouse_id=warehouse_id,
+            model_name="size",
+            action="create",
+        )
 
-    return await controller.create_size(data)
+        return await controller.create_size(data)
+    except Exception as e:
+        print(request.headers)
+
 
 
 @router.put(

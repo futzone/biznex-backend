@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Header, status
+from starlette.requests import Request
 
 from app.api.controllers.product.product_image import ProductImageController
 from app.api.models.user import AdminUser
@@ -37,12 +38,13 @@ async def get_image(image_id: int, controller: ProductImageController = Depends(
     "/", response_model=ProductImageResponseSchema, status_code=status.HTTP_201_CREATED
 )
 async def create_image(
+    request: Request,
     data: ProductImageCreateSchema,
     controller: ProductImageController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -60,13 +62,14 @@ async def create_image(
     status_code=status.HTTP_200_OK,
 )
 async def update_image(
+    request: Request,
     image_id: int,
     data: ProductImageUpdateSchema,
     controller: ProductImageController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -80,12 +83,13 @@ async def update_image(
 
 @router.delete("/{image_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_image(
+    request: Request,
     image_id: int,
     controller: ProductImageController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,

@@ -5,6 +5,7 @@ from fastapi import (
     Header,
     status,
 )
+from starlette.requests import Request
 
 from app.api.constants.languages import languages
 from app.api.controllers.product.product_information import ProductInformationController
@@ -61,12 +62,13 @@ async def get_product_info(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_product_info(
+    request: Request,
     data: ProductInformationCreateSchema,
     controller: ProductInformationController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ) -> ProductInformationLanguageResponseSchema:
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,

@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, Header, status
+from starlette.requests import Request
 
 from app.api.controllers.product.size import SizeController
 from app.api.models.user import AdminUser
@@ -47,12 +48,13 @@ async def get_size(
     "/", response_model=SizeCreateResponseSchema, status_code=status.HTTP_201_CREATED
 )
 async def create_size(
+    request: Request,
     data: SizeCreateSchema,
     controller: SizeController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -70,13 +72,14 @@ async def create_size(
     status_code=status.HTTP_200_OK,
 )
 async def update_size(
+    request: Request,
     size_id: int,
     data: SizeUpdateSchema,
     controller: SizeController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -90,13 +93,13 @@ async def update_size(
 
 @router.delete("/{size_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_size(
+    request: Request,
     size_id: int,
     controller: SizeController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,

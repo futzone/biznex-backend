@@ -12,6 +12,7 @@ from fastapi import (
     HTTPException,
 )
 from pydantic import ValidationError
+from starlette.requests import Request
 
 from app.api.controllers.product.category import CategoryController
 from app.api.controllers.warehouse import WarehouseController
@@ -31,17 +32,16 @@ from app.api.controllers.admin import AdminController
 
 router = APIRouter()
 
-
 controller = AdminController()
 
 
 @router.get(
-    "/",  status_code=status.HTTP_200_OK, response_model=List[CategoryResponseSchema]
+    "/", status_code=status.HTTP_200_OK, response_model=List[CategoryResponseSchema]
 )
 async def get_warehouse_categories(
-    language: str = Header(None, alias="language"),
-    warehouse_id: int = Header(None, alias="warehouse_id"),
-    controller: CategoryController = Depends(),
+        language: str = Header(None, alias="language"),
+        warehouse_id: int = Header(None, alias="warehouse_id"),
+        controller: CategoryController = Depends(),
 ):
     if warehouse_id is None:
         raise HTTPException(
@@ -57,10 +57,10 @@ async def get_warehouse_categories(
     status_code=status.HTTP_200_OK,
 )
 async def get_category(
-    category_id: int,
-    warehouse_id: int = Header(None, alias="warehouse_id"),
-    language: str = Header("uz", alias="language"),
-    controller: CategoryController = Depends(),
+        category_id: int,
+        warehouse_id: int = Header(None, alias="warehouse_id"),
+        language: str = Header("uz", alias="language"),
+        controller: CategoryController = Depends(),
 ) -> CategoryResponseSchema | CategoryCreateResponseSchema:
     category = await controller.get_warehouse_category_by_id(warehouse_id, category_id, language)
     if not category:
@@ -77,14 +77,14 @@ async def get_category(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_category(
-    data: CategoryCreateSchema,
-    controller: CategoryController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
-    warehouse_controller: WarehouseController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        data: CategoryCreateSchema,
+        controller: CategoryController = Depends(),
+        warehouse_controller: WarehouseController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ) -> CategoryCreateResponseSchema:
-
+    warehouse_id = request.headers.get('warehouse_id')
     warehouse = await warehouse_controller.get_warehouse_by_id(warehouse_id)
 
     await check_permission(
@@ -94,7 +94,6 @@ async def create_category(
         model_name="category",
         action="create",
     )
-        
 
     try:
         data = CategoryCreateSchema(
@@ -115,15 +114,15 @@ async def create_category(
     status_code=status.HTTP_200_OK,
 )
 async def update_category(
-    category_id: int,
-    data: Optional[CategoryUpdateSchema] = None,
-    controller: CategoryController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
-    language: str = Header("uz", alias="language"),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        category_id: int,
+        data: Optional[CategoryUpdateSchema] = None,
+        controller: CategoryController = Depends(),
+        language: str = Header("uz", alias="language"),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ) -> CategoryCreateResponseSchema:
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -162,13 +161,13 @@ async def update_category(
 
 @router.delete("/{category_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(
-    category_id: int,
-    controller: CategoryController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        category_id: int,
+        controller: CategoryController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ) -> None:
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,

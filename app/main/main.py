@@ -154,9 +154,9 @@ def create_app() -> CORSMiddleware:
     v1_router.include_router(
         measure_router, prefix="/measure", tags=["Measure"]
     )
-    v1_router.include_router(
-        product_image_router, prefix="/product-image", tags=["Product Image"]
-    )
+    # v1_router.include_router(
+    #     product_image_router, prefix="/product-image", tags=["Product Image"]
+    # )
     v1_router.include_router(
         order_router, prefix="/order", tags=["Order"]
     )

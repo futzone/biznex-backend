@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Header, Query
 from sqlalchemy import alias
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 
 from app.api.models import AdminOrder
 from app.api.models.user import AdminUser
@@ -52,13 +53,14 @@ async def get_admin_order(
 
 @router.post("/order", response_model=AdminOrderCreate)
 async def create_order(
+        request: Request,
         session: AsyncSession = Depends(get_general_session),
         current_user: AdminUser = Depends(get_current_admin_user),
         language: str = Header(..., alias="language"),
-        warehouse_id: int = Header(alias="warehouse_id"),
 ) -> AdminOrderResponse:
     controller = AdminOrderController(session)
     try:
+        warehouse_id = request.headers.get('warehouse_id')
         return await controller.create_admin_order(current_user.id, language, warehouse_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -79,11 +81,12 @@ async def close_admin_order(
     "/offline/order",
 )
 async def create_complate_order(
+        request: Request,
         order_data: List[CompleteOrderRequest],
         session: AsyncSession = Depends(get_general_session),
         current_user: AdminUser = Depends(get_current_admin_user),
         language: str = Header(..., alias="language"),
-        warehouse_id: int = Header(alias="warehouse_id"),
 ):
+    warehouse_id = request.headers.get('warehouse_id')
     controller = AdminOrderController(session)
     return await controller.create_complete_order(data=order_data, admin_id=current_user.id, language=language, warehouse_id=warehouse_id)

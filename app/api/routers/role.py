@@ -1,6 +1,8 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Header, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
+
 from app.api.controllers.role import AdminWarehouseController
 from app.api.models.user import AdminUser
 from app.api.schemas.role import (
@@ -18,13 +20,13 @@ router = APIRouter()
 
 @router.post("/admin_warehouse", response_model=AdminWarehouseCreate)
 async def create_admin_warehouse(
+    request: Request,
     data: AdminWarehouseCreate,
     db: AsyncSession = Depends(get_general_session),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -78,14 +80,14 @@ async def get_admin_warehouse(
     "/admin_warehouse/{admin_warehouse_id}", response_model=AdminWarehouseUpdate
 )
 async def update_permissions(
+    request: Request,
     admin_warehouse_id: int,
     data: AdminWarehouseUpdate,
     db: AsyncSession = Depends(get_general_session),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -100,13 +102,13 @@ async def update_permissions(
 
 @router.delete("/admin_warehouse/{admin_warehouse_id}", status_code=204)
 async def delete_admin_warehouse(
+    request: Request,
     admin_warehouse_id: int,
     db: AsyncSession = Depends(get_general_session),
-    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,

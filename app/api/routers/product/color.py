@@ -1,6 +1,7 @@
 # app/api/routers/product/color.py
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Header, status
+from starlette.requests import Request
 
 from app.api.controllers.product.color import ColorController
 from app.api.models.user import AdminUser
@@ -43,13 +44,14 @@ async def get_color(
     "/", response_model=ColorLanguageResponseSchema, status_code=status.HTTP_201_CREATED
 )
 async def create_color(
+    request: Request,
     data: ColorCreateSchema,
     controller: ColorController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     session: AsyncSession = Depends(get_general_session),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 
 ):
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -65,14 +67,14 @@ async def create_color(
     "/{color_id}/", response_model=ColorUpdateSchema, status_code=status.HTTP_200_OK
 )
 async def update_color(
+    request: Request,
     color_id: int,
     data: ColorUpdateSchema,
     controller: ColorController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
     session: AsyncSession = Depends(get_general_session),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,

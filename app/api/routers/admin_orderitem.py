@@ -3,6 +3,7 @@ from typing import Any, Coroutine, List
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy import alias
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 
 from app.api.controllers.admin_orderitem import AdminOrderItemController
 from app.api.models import AdminOrder
@@ -31,15 +32,16 @@ async def get_order_items(
 
 @router.post("/orderitem", response_model=List[AdminOrderItemResponse])
 async def add_item_to_order(
+        request: Request,
         order_id: int,
         items_data: List[OrderItemRequest],
         language: str = Header(..., alias="language"),
         session: AsyncSession = Depends(get_general_session),
         current_admin: AdminUser = Depends(get_current_admin_user),
-        warehouse_id: int = Header(alias="warehouse_id"),
 ) -> List[AdminOrderItemResponse]:
 
     controller = AdminOrderItemController(session)
+    warehouse_id = request.headers.get('warehouse_id')
 
     return await controller.add_items_to_order(items=items_data, order_id=order_id, admin_id=current_admin.id, language=language, warehouse_id=warehouse_id)
 

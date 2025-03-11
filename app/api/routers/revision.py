@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, status
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
+
 from app.api.controllers.revision import RevisionController
 from app.api.models.user import AdminUser
 from app.api.routers.admin import get_current_admin_user
@@ -12,11 +14,12 @@ router = APIRouter()
 
 @router.get("/", response_model=Optional[RevisionResponse])
 async def get_active_revision(
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
-    warehouse_id: int = Header(alias="warehouse_id"),
+        request: Request,
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
+    warehouse_id = request.headers.get('warehouse_id')
     revision = await controller.get_active_revision(warehouse_id)
     if revision is None:
         raise HTTPException(
@@ -25,20 +28,22 @@ async def get_active_revision(
         )
     return revision
 
+
 @router.post("/", response_model=RevisionResponse)
 async def create_revision(
-    schema: CreateRevisionSchema,
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
+        schema: CreateRevisionSchema,
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
     return await controller.create_revision(schema, current_user.id)
 
+
 @router.get("/{revision_id}", response_model=RevisionDetailResponse)
 async def get_revision_detail(
-    revision_id: int,
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
+        revision_id: int,
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
     revision = await controller.get_revision_detail(revision_id)
@@ -46,33 +51,35 @@ async def get_revision_detail(
         raise HTTPException(status_code=404, detail="Revision not found")
     return revision
 
+
 @router.post("/{revision_id}/items", response_model=RevisionItemResponse)
 async def add_revision_item(
-    revision_id: int,
-    schema: RevisionItemCreate,
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
-    warehouse_id: int = Header(alias="warehouse_id"),
+        request: Request,
+        revision_id: int,
+        schema: RevisionItemCreate,
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
+    warehouse_id = request.headers.get('warehouse_id')
     return await controller.add_revision_item(revision_id, schema, warehouse_id)
+
 
 @router.post("/{revision_id}/complete", response_model=RevisionResponse)
 async def complete_revision(
-    revision_id: int,
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
+        revision_id: int,
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
     return await controller.complete_revision(revision_id, current_user.id)
 
+
 @router.post("/{revision_id}/cancel", response_model=RevisionResponse)
 async def cancel_revision(
-    revision_id: int,
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
+        revision_id: int,
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
     return await controller.cancel_revision(revision_id, current_user.id)
-    
-

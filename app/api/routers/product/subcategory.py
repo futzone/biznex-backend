@@ -1,5 +1,6 @@
 from typing import List, Sequence, Optional
 from fastapi import APIRouter, Depends, status, HTTPException, Body, Header
+from starlette.requests import Request
 
 from app.api.controllers.product.subcategory import SubcategoryController
 from app.api.models.user import AdminUser
@@ -24,10 +25,10 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_subcategories(
-    category_id: Optional[int] = None,
-    controller: SubcategoryController = Depends(),
-    language: str = Header(default="uz", alias="language"),
-    warehouse_id: int = Header(None, alias="warehouse_id")
+        category_id: Optional[int] = None,
+        controller: SubcategoryController = Depends(),
+        language: str = Header(default="uz", alias="language"),
+        warehouse_id: int = Header(None, alias="warehouse_id")
 ) -> Sequence[SubcategoryResponseSchema]:
     return await controller.get_subcategories(category_id, language, warehouse_id)
 
@@ -38,9 +39,9 @@ async def get_subcategories(
     status_code=status.HTTP_200_OK,
 )
 async def get_subcategory(
-    subcategory_id: int,
-    controller: SubcategoryController = Depends(),
-    language: str = Header(None, alias="language"),
+        subcategory_id: int,
+        controller: SubcategoryController = Depends(),
+        language: str = Header(None, alias="language"),
 ) -> SubcategoryResponseSchema | SubcategoryCreateResponseSchema:
     subcategory = await controller.get_subcategory_by_id(subcategory_id, language)
     if not subcategory:
@@ -57,14 +58,13 @@ async def get_subcategory(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_subcategory(
-    data: SubcategoryCreateSchema,
-    controller: SubcategoryController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    
-) -> SubcategoryCreateResponseSchema:
+        data: SubcategoryCreateSchema,
+        controller: SubcategoryController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 
-    
+) -> SubcategoryCreateResponseSchema:
     return await controller.create_subcategory(data)
+
 
 @router.post(
     "warehouse_subcategory/",
@@ -72,15 +72,12 @@ async def create_subcategory(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_subcategory(
-    data: WarehouseSubcategoryCreate,
-    controller: SubcategoryController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    
+        data: WarehouseSubcategoryCreate,
+        controller: SubcategoryController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+
 ) -> WarehouseCategoryResponse:
-
-    
     return await controller.create_warehouse_subcategory(data)
-
 
 
 @router.put(
@@ -89,14 +86,14 @@ async def create_subcategory(
     status_code=status.HTTP_200_OK,
 )
 async def update_subcategory(
-    subcategory_id: int,
-    data: SubcategoryUpdateSchema,
-    controller: SubcategoryController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        subcategory_id: int,
+        data: SubcategoryUpdateSchema,
+        controller: SubcategoryController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ) -> SubcategoryCreateResponseSchema:
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -110,13 +107,13 @@ async def update_subcategory(
 
 @router.delete("/{subcategory_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_subcategory(
-    subcategory_id: int,
-    controller: SubcategoryController = Depends(),
-    warehouse_id: int = Header(alias="warehouse_id"),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        subcategory_id: int,
+        controller: SubcategoryController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ) -> None:
-
+    warehouse_id = request.headers.get('warehouse_id')
     await check_permission(
         session=session,
         admin_id=current_admin.id,

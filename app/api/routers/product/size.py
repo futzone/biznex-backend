@@ -1,3 +1,4 @@
+from http.client import HTTPException
 from typing import List
 from fastapi import APIRouter, Depends, Header, status
 from starlette.requests import Request
@@ -71,6 +72,10 @@ async def create_size(
         print("\n\n\n\n HEADERS: ")
         print(request.headers)
         print("\n\n\n\n")
+        return HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"{request.headers}",
+        )
 
 
 @router.put(

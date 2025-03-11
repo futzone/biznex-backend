@@ -22,9 +22,7 @@ jobs:
         run: |
           sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             cd biznex-backend/
-            git checkout main
-            git fetch origin main
-            git reset --hard origin/main
+            git pull
             
             if [ ! -d "venv" ]; then
               python3 -m venv venv

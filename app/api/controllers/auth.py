@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 import jwt
+from jwt import PyJWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.models.user import User
 from app.api.repositories.smsrepositories import SMSRepository
@@ -19,12 +20,12 @@ settings = settings.get_settings()
 class AuthController:
     @classmethod
     async def register_user(
-        cls,
-        full_name: str,
-        phone_number: str,
-        password: str,
-        profile_picture: str,
-        db: AsyncSession,
+            cls,
+            full_name: str,
+            phone_number: str,
+            password: str,
+            profile_picture: str,
+            db: AsyncSession,
     ):
         user_repo = UserRepository(db)
         sms_repo = SMSRepository(db)
@@ -74,7 +75,7 @@ class AuthController:
 
     @classmethod
     async def login_user(
-        cls, phone_number: str, password: str, db: AsyncSession, response: Response
+            cls, phone_number: str, password: str, db: AsyncSession, response: Response
     ):
         user_repo = UserRepository(db)
         user = await user_repo.get_user_by_phone(phone_number=phone_number)
@@ -133,10 +134,10 @@ class AuthController:
         }
 
     async def update_user(
-        user_id: int,
-        full_name: Optional[str] = None,
-        profile_picture: Optional[str] = None,
-        db: AsyncSession = None,
+            user_id: int,
+            full_name: Optional[str] = None,
+            profile_picture: Optional[str] = None,
+            db: AsyncSession = None,
     ) -> User:
         user_repo = UserRepository(db)
         user = await user_repo.get_user_by_id(user_id)
@@ -166,18 +167,17 @@ class AuthController:
     @classmethod
     async def refresh_token(cls, refresh_token: bytes, response: JSONResponse):
         try:
-
             payload = jwt.decode(
                 refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
             )
             user_id = payload.get("sub")
             role = payload.get("role")
 
-            if not isinstance(payload.get("sub"), str):
+            if not isinstance(user_id, str):
                 raise HTTPException(
                     status_code=400,
                     detail="Subject must be a string"
-                    )
+                )
 
             if user_id is None:
                 raise HTTPException(status_code=403, detail="Invalid refresh token")
@@ -197,15 +197,18 @@ class AuthController:
 
             return {"access_token": access_token}
 
-        except HTTPException as e:
-            raise HTTPException(status_code=500, detail=f"Internal server error {e}")
+        except PyJWTError:
+            raise HTTPException(status_code=403, detail="Invalid refresh token")
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
     @classmethod
     async def verify_reset_code(
-        cls,
-        phone_number: str,
-        code: str,
-        db: AsyncSession,
+            cls,
+            phone_number: str,
+            code: str,
+            db: AsyncSession,
     ):
         user_repo = UserRepository(db)
         sms_repo = SMSRepository(db)
@@ -233,11 +236,11 @@ class AuthController:
 
     @classmethod
     async def update_password(
-        cls,
-        old_password: str,
-        new_password: str,
-        current_user: User,
-        db: AsyncSession,
+            cls,
+            old_password: str,
+            new_password: str,
+            current_user: User,
+            db: AsyncSession,
     ):
         user_repo = UserRepository(db)
 
@@ -259,7 +262,7 @@ class AuthController:
 
     @classmethod
     async def forgot_password(
-        cls, phone_number: str, db: AsyncSession, response: Response
+            cls, phone_number: str, db: AsyncSession, response: Response
     ):
         user_repo = UserRepository(db)
         sms_repo = SMSRepository(db)
@@ -275,7 +278,7 @@ class AuthController:
             user_id=user.id, code=code, expired_at=expired_at
         )
 
-        print(f"Generated SMS Code for user {user.id}: {code}") 
+        print(f"Generated SMS Code for user {user.id}: {code}")
 
         return {
             "message": "A verification code has been sent to your phone.",
@@ -284,11 +287,11 @@ class AuthController:
 
     @classmethod
     async def reset_password(
-        cls,
-        reset_token: str,
-        new_password: str,
-        response: Response,
-        db: AsyncSession,
+            cls,
+            reset_token: str,
+            new_password: str,
+            response: Response,
+            db: AsyncSession,
     ):
         user_repo = UserRepository(db)
 
@@ -330,9 +333,9 @@ class AuthController:
 
     @classmethod
     async def get_current_user(
-        self,
-        request: Request,
-        session: AsyncSession,
+            self,
+            request: Request,
+            session: AsyncSession,
     ):
         user_repo = UserRepository(session=session)
         token = await AuthUtils.get_current_user_from_cookie(request)

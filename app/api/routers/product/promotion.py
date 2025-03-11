@@ -20,7 +20,7 @@ async def get_promotions(
         # current_admin: AdminUser = Depends(get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     return await controller.get_promotions(warehouse_id)
 
 @router.post("/", response_model=PromotionResponse)
@@ -31,5 +31,5 @@ async def create_promotion(
         # current_admin: AdminUser = Depends(get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     return await controller.create_promotion(data, warehouse_id)

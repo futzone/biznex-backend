@@ -60,7 +60,7 @@ async def create_order(
 ) -> AdminOrderResponse:
     controller = AdminOrderController(session)
     try:
-        warehouse_id = request.headers.get('warehouse_id')
+        warehouse_id = int(request.headers.get('warehouse_id'))
         return await controller.create_admin_order(current_user.id, language, warehouse_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -87,6 +87,6 @@ async def create_complate_order(
         current_user: AdminUser = Depends(get_current_admin_user),
         language: str = Header(..., alias="language"),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     controller = AdminOrderController(session)
     return await controller.create_complete_order(data=order_data, admin_id=current_user.id, language=language, warehouse_id=warehouse_id)

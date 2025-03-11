@@ -100,7 +100,7 @@ async def get_top_sellers(
         controller: AdminController = Depends(),
         session: AsyncSession = Depends(get_general_session)
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -224,7 +224,9 @@ async def get_admin_dashboard(
     #     )
     # )
     # total_products = result.scalar()
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
+
+    print(warehouse_id)
 
     return await controller.get_admin_dashboard(warehouse_id)
 
@@ -243,5 +245,5 @@ async def get_dashboard_stats(
     #     action="read",
     # )
 
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     return await controller.get_hourly_orders_today_formatted(warehouse_id)

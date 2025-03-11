@@ -25,11 +25,12 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_subcategories(
+        request: Request,
         category_id: Optional[int] = None,
         controller: SubcategoryController = Depends(),
         language: str = Header(default="uz", alias="language"),
-        warehouse_id: int = Header(None, alias="warehouse_id")
 ) -> Sequence[SubcategoryResponseSchema]:
+    warehouse_id = int(request.headers.get('warehouse_id'))
     return await controller.get_subcategories(category_id, language, warehouse_id)
 
 
@@ -93,7 +94,7 @@ async def update_subcategory(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ) -> SubcategoryCreateResponseSchema:
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -113,7 +114,7 @@ async def delete_subcategory(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ) -> None:
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

@@ -44,7 +44,7 @@ async def create_image(
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -69,7 +69,7 @@ async def update_image(
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -89,7 +89,7 @@ async def delete_image(
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

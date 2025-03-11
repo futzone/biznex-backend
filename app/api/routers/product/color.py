@@ -51,7 +51,7 @@ async def create_color(
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -74,7 +74,7 @@ async def update_color(
     session: AsyncSession = Depends(get_general_session),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

@@ -24,9 +24,9 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
 )
 async def get_sizes(
-    warehouse_id: int | None = None,
-    controller: SizeController = Depends(),
-    language: str = Header(default="uz", alias="language"),
+        warehouse_id: int | None = None,
+        controller: SizeController = Depends(),
+        language: str = Header(default="uz", alias="language"),
 ):
     return await controller.get_sizes(warehouse_id, language)
 
@@ -37,9 +37,9 @@ async def get_sizes(
     status_code=status.HTTP_200_OK,
 )
 async def get_size(
-    size_id: int,
-    controller: SizeController = Depends(),
-    language: str = Header(default="uz", alias="language"),
+        size_id: int,
+        controller: SizeController = Depends(),
+        language: str = Header(default="uz", alias="language"),
 ) -> SizeResponseSchema | SizeCreateResponseSchema:
     return await controller.get_size_by_id(size_id, language)
 
@@ -48,13 +48,15 @@ async def get_size(
     "/", response_model=SizeCreateResponseSchema, status_code=status.HTTP_201_CREATED
 )
 async def create_size(
-    request: Request,
-    data: SizeCreateSchema,
-    controller: SizeController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        data: SizeCreateSchema,
+        controller: SizeController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    print(request.headers)
+    warehouse_id = int(request.headers.get('warehouse_id'))
+
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -72,14 +74,14 @@ async def create_size(
     status_code=status.HTTP_200_OK,
 )
 async def update_size(
-    request: Request,
-    size_id: int,
-    data: SizeUpdateSchema,
-    controller: SizeController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        size_id: int,
+        data: SizeUpdateSchema,
+        controller: SizeController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -93,13 +95,13 @@ async def update_size(
 
 @router.delete("/{size_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_size(
-    request: Request,
-    size_id: int,
-    controller: SizeController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        size_id: int,
+        controller: SizeController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = request.headers.get('warehouse_id')
+    warehouse_id = int(request.headers.get('warehouse_id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

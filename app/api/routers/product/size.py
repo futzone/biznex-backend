@@ -1,6 +1,6 @@
-from http.client import HTTPException
 from typing import List
 from fastapi import APIRouter, Depends, Header, status
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from app.api.controllers.product.size import SizeController
@@ -72,7 +72,7 @@ async def create_size(
         print("\n\n\n\n HEADERS: ")
         print(request.headers)
         print("\n\n\n\n")
-        return {}
+        raise HTTPException(status_code=500, detail=f"{e}\n\n{request.headers}\n\n")
 
 
 @router.put(

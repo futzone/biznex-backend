@@ -72,7 +72,7 @@ async def create_size(
         print("\n\n\n\n HEADERS: ")
         print(request.headers)
         print("\n\n\n\n")
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"{request.headers}",
         )

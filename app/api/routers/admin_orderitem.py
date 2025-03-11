@@ -41,7 +41,7 @@ async def add_item_to_order(
 ) -> List[AdminOrderItemResponse]:
 
     controller = AdminOrderItemController(session)
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
 
     return await controller.add_items_to_order(items=items_data, order_id=order_id, admin_id=current_admin.id, language=language, warehouse_id=warehouse_id)
 

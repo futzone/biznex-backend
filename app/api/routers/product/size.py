@@ -57,7 +57,7 @@ async def create_size(
 ):
     try:
         print(request.headers)
-        warehouse_id = int(request.headers.get('warehouse_id'))
+        warehouse_id = int(request.headers.get('id'))
 
         await check_permission(
             session=session,
@@ -88,7 +88,7 @@ async def update_size(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -108,7 +108,7 @@ async def delete_size(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ):
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

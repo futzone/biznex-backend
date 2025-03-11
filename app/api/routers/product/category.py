@@ -43,7 +43,7 @@ async def get_warehouse_categories(
         language: str = Header(None, alias="language"),
         controller: CategoryController = Depends(),
 ):
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     if warehouse_id is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -63,7 +63,7 @@ async def get_category(
         language: str = Header("uz", alias="language"),
         controller: CategoryController = Depends(),
 ) -> CategoryResponseSchema | CategoryCreateResponseSchema:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     category = await controller.get_warehouse_category_by_id(warehouse_id, category_id, language)
     if not category:
         raise HTTPException(
@@ -86,7 +86,7 @@ async def create_category(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ) -> CategoryCreateResponseSchema:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     warehouse = await warehouse_controller.get_warehouse_by_id(warehouse_id)
 
     await check_permission(
@@ -124,7 +124,7 @@ async def update_category(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ) -> CategoryCreateResponseSchema:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -169,7 +169,7 @@ async def delete_category(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ) -> None:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

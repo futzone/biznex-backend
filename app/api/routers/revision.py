@@ -19,7 +19,7 @@ async def get_active_revision(
         current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     revision = await controller.get_active_revision(warehouse_id)
     if revision is None:
         raise HTTPException(
@@ -61,7 +61,7 @@ async def add_revision_item(
         current_user: AdminUser = Depends(get_current_admin_user),
 ):
     controller = RevisionController(session)
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     return await controller.add_revision_item(revision_id, schema, warehouse_id)
 
 

@@ -30,7 +30,7 @@ async def get_subcategories(
         controller: SubcategoryController = Depends(),
         language: str = Header(default="uz", alias="language"),
 ) -> Sequence[SubcategoryResponseSchema]:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     return await controller.get_subcategories(category_id, language, warehouse_id)
 
 
@@ -94,7 +94,7 @@ async def update_subcategory(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ) -> SubcategoryCreateResponseSchema:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -114,7 +114,7 @@ async def delete_subcategory(
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
 ) -> None:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

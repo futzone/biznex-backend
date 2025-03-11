@@ -71,7 +71,7 @@ async def get_all_products(
         controller: ProductController = Depends(),
         language: str = Header(None, alias="language"),
 ):
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     return await controller.get_all_products(warehouse_id=warehouse_id, language=language)
 
 
@@ -88,7 +88,7 @@ async def get_little_products_left(
         controller: ProductController = Depends(),
         language: str = Header(None, alias="language"),
 ) -> Sequence[ProductResponseSchema | ProductLanguageResponseSchema]:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     return await controller.get_little_products_left(limit=limit, offset=offset, warehouse_id=warehouse_id, language=language, amount=amount)
 
 
@@ -289,7 +289,7 @@ async def delete_product(
     Delete product by ID
     """
 
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
 
     await check_permission(
         session=session,
@@ -317,7 +317,7 @@ async def get_all_variants(
         request: Request,
         controller: ProductVariantController = Depends(),
 ):
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     return await controller.get_all_variants(warehouse_id)
 
 
@@ -382,7 +382,7 @@ async def create_variant(
         session: AsyncSession = Depends(get_general_session),
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ) -> ProductVariantResponseSchema:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -438,7 +438,7 @@ async def update_variant(
         session: AsyncSession = Depends(get_general_session),
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ) -> ProductVariantResponseSchema:
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -480,7 +480,7 @@ async def delete_variant(
         session: AsyncSession = Depends(get_general_session),
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
-    warehouse_id = int(request.headers.get('warehouse_id'))
+    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,

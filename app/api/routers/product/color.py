@@ -45,7 +45,7 @@ async def get_color(
 async def create_color(
     data: ColorCreateSchema,
     controller: ColorController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     session: AsyncSession = Depends(get_general_session),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 
@@ -68,7 +68,7 @@ async def update_color(
     color_id: int,
     data: ColorUpdateSchema,
     controller: ColorController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     session: AsyncSession = Depends(get_general_session),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):

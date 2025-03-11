@@ -39,7 +39,7 @@ async def get_image(image_id: int, controller: ProductImageController = Depends(
 async def create_image(
     data: ProductImageCreateSchema,
     controller: ProductImageController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
@@ -63,7 +63,7 @@ async def update_image(
     image_id: int,
     data: ProductImageUpdateSchema,
     controller: ProductImageController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
@@ -82,7 +82,7 @@ async def update_image(
 async def delete_image(
     image_id: int,
     controller: ProductImageController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):

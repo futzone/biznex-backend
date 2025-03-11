@@ -92,7 +92,7 @@ async def update_subcategory(
     subcategory_id: int,
     data: SubcategoryUpdateSchema,
     controller: SubcategoryController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ) -> SubcategoryCreateResponseSchema:
@@ -112,7 +112,7 @@ async def update_subcategory(
 async def delete_subcategory(
     subcategory_id: int,
     controller: SubcategoryController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ) -> None:

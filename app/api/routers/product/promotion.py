@@ -15,7 +15,7 @@ async def get_promotions(
         controller: PromotionController = Depends(),
         # current_admin: AdminUser = Depends(get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
 ):
     return await controller.get_promotions(warehouse_id)
 
@@ -25,6 +25,6 @@ async def create_promotion(
         controller: PromotionController = Depends(),
         # current_admin: AdminUser = Depends(get_current_admin_user),
         session: AsyncSession = Depends(get_general_session),
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
 ):
     return await controller.create_promotion(data, warehouse_id)

@@ -63,7 +63,7 @@ async def get_product_info(
 async def create_product_info(
     data: ProductInformationCreateSchema,
     controller: ProductInformationController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ) -> ProductInformationLanguageResponseSchema:

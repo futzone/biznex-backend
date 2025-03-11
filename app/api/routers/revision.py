@@ -14,7 +14,7 @@ router = APIRouter()
 async def get_active_revision(
     session: AsyncSession = Depends(get_general_session),
     current_user: AdminUser = Depends(get_current_admin_user),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
 ):
     controller = RevisionController(session)
     revision = await controller.get_active_revision(warehouse_id)
@@ -52,7 +52,7 @@ async def add_revision_item(
     schema: RevisionItemCreate,
     session: AsyncSession = Depends(get_general_session),
     current_user: AdminUser = Depends(get_current_admin_user),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
 ):
     controller = RevisionController(session)
     return await controller.add_revision_item(revision_id, schema, warehouse_id)

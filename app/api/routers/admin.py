@@ -93,7 +93,7 @@ async def get_admins_by_warehouse(
     status_code=status.HTTP_200_OK,
 )
 async def get_top_sellers(
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
         start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
         end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
         current_admin: AdminUser = Depends(get_current_admin_user),
@@ -204,7 +204,7 @@ async def get_warehouse_stats(
 @router.get("/dashboard", response_model=AdminDashboardResponse)
 async def get_admin_dashboard(
         session: AsyncSession = Depends(get_general_session),
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
         controller: AdminController = Depends(),
         # current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
@@ -229,7 +229,7 @@ async def get_admin_dashboard(
 
 @router.get("/dashboard/stats")
 async def get_dashboard_stats(
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
         controller: AdminController = Depends(),
         # current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):

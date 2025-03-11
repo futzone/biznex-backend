@@ -49,7 +49,7 @@ async def get_size(
 async def create_size(
     data: SizeCreateSchema,
     controller: SizeController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
@@ -73,7 +73,7 @@ async def update_size(
     size_id: int,
     data: SizeUpdateSchema,
     controller: SizeController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
@@ -92,7 +92,7 @@ async def update_size(
 async def delete_size(
     size_id: int,
     controller: SizeController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):

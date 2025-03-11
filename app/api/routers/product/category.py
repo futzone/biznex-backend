@@ -79,7 +79,7 @@ async def get_category(
 async def create_category(
     data: CategoryCreateSchema,
     controller: CategoryController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     warehouse_controller: WarehouseController = Depends(),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
@@ -118,7 +118,7 @@ async def update_category(
     category_id: int,
     data: Optional[CategoryUpdateSchema] = None,
     controller: CategoryController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     language: str = Header("uz", alias="language"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
@@ -164,7 +164,7 @@ async def update_category(
 async def delete_category(
     category_id: int,
     controller: CategoryController = Depends(),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ) -> None:

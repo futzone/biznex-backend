@@ -36,7 +36,7 @@ async def add_item_to_order(
         language: str = Header(..., alias="language"),
         session: AsyncSession = Depends(get_general_session),
         current_admin: AdminUser = Depends(get_current_admin_user),
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
 ) -> List[AdminOrderItemResponse]:
 
     controller = AdminOrderItemController(session)

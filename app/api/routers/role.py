@@ -20,7 +20,7 @@ router = APIRouter()
 async def create_admin_warehouse(
     data: AdminWarehouseCreate,
     db: AsyncSession = Depends(get_general_session),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
@@ -81,7 +81,7 @@ async def update_permissions(
     admin_warehouse_id: int,
     data: AdminWarehouseUpdate,
     db: AsyncSession = Depends(get_general_session),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):
@@ -102,7 +102,7 @@ async def update_permissions(
 async def delete_admin_warehouse(
     admin_warehouse_id: int,
     db: AsyncSession = Depends(get_general_session),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+    warehouse_id: int = Header(alias="warehouse_id"),
     current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
     session: AsyncSession = Depends(get_general_session),
 ):

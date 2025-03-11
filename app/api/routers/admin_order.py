@@ -55,7 +55,7 @@ async def create_order(
         session: AsyncSession = Depends(get_general_session),
         current_user: AdminUser = Depends(get_current_admin_user),
         language: str = Header(..., alias="language"),
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
 ) -> AdminOrderResponse:
     controller = AdminOrderController(session)
     try:
@@ -83,7 +83,7 @@ async def create_complate_order(
         session: AsyncSession = Depends(get_general_session),
         current_user: AdminUser = Depends(get_current_admin_user),
         language: str = Header(..., alias="language"),
-        warehouse_id: int = Header(..., alias="warehouse_id"),
+        warehouse_id: int = Header(alias="warehouse_id"),
 ):
     controller = AdminOrderController(session)
     return await controller.create_complete_order(data=order_data, admin_id=current_user.id, language=language, warehouse_id=warehouse_id)

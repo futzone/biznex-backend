@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Optional
 from fastapi import Depends, HTTPException
@@ -8,9 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.api.models.order import AdminOrder, AdminOrderItem
 from app.api.models.product import Product, ProductVariant, Promotion, promotion_product_variants
-from app.api.schemas.order import AdminOrderItemResponse, AdminOrderItemSchema, AdminOrderResponse, AdminProductVariantResponse, CompleteOrderRequest
+from app.api.schemas.order import AdminOrderItemResponse, AdminOrderItemSchema, AdminOrderResponse, AdminProductVariantResponse, CompleteOrderRequest, AdminOrderUpdate
 from app.core.databases.postgres import get_general_session
 from app.core.models.enums import AdminOrderStatusEnum, PaymentMethodEnum
+from utils.time_utils import now_time
 
 
 class AdminOrderRepository:
@@ -41,10 +42,10 @@ class AdminOrderRepository:
                 .selectinload(ProductVariant.measure),
                 selectinload(AdminOrder.items)
                 .selectinload(AdminOrderItem.product_variant)
-                .selectinload(ProductVariant.images), 
+                .selectinload(ProductVariant.images),
                 selectinload(AdminOrder.items)
                 .selectinload(AdminOrderItem.product_variant)
-                .selectinload(ProductVariant.promotions)  
+                .selectinload(ProductVariant.promotions)
             )
         )
 
@@ -71,8 +72,8 @@ class AdminOrderRepository:
                 AdminOrderItemResponse(
                     id=item.id,
                     order_id=item.order_id,
-                    product_variant=AdminProductVariantResponse.from_variant(  
-                        item.product_variant, 
+                    product_variant=AdminProductVariantResponse.from_variant(
+                        item.product_variant,
                         language
                     ),
                     quantity=item.quantity,
@@ -86,7 +87,7 @@ class AdminOrderRepository:
                 ) for item in opened_order.items
             ]
         )
-    
+
     async def get_order_by_id(self, order_id: int, language: str) -> AdminOrderResponse | None:
         result = await self.__session.execute(
             select(AdminOrder)
@@ -108,10 +109,10 @@ class AdminOrderRepository:
                 .selectinload(ProductVariant.measure),
                 selectinload(AdminOrder.items)
                 .selectinload(AdminOrderItem.product_variant)
-                .selectinload(ProductVariant.images), 
+                .selectinload(ProductVariant.images),
                 selectinload(AdminOrder.items)
                 .selectinload(AdminOrderItem.product_variant)
-                .selectinload(ProductVariant.promotions)  
+                .selectinload(ProductVariant.promotions)
             )
         )
 
@@ -138,8 +139,8 @@ class AdminOrderRepository:
                 AdminOrderItemResponse(
                     id=item.id,
                     order_id=item.order_id,
-                    product_variant=AdminProductVariantResponse.from_variant(  
-                        item.product_variant, 
+                    product_variant=AdminProductVariantResponse.from_variant(
+                        item.product_variant,
                         language
                     ),
                     quantity=item.quantity,
@@ -186,19 +187,19 @@ class AdminOrderRepository:
 
             if not product_variant:
                 raise HTTPException(
-                    status_code=404, 
+                    status_code=404,
                     detail=f"Product variant not found for barcode {item.barcode}"
                 )
 
             original_price = Decimal(str(item.custom_price or product_variant.current_price))
-            
+
             active_promotion = await self.get_active_promotion(product_variant.id)
             discounted_price = original_price
-            
+
             if active_promotion:
                 discount_multiplier = Decimal(str((100 - active_promotion.discount) / 100))
                 discounted_price = (original_price * discount_multiplier).quantize(Decimal('0.01'))
-            
+
             item_quantity = Decimal(str(item.quantity))
 
             order_item = AdminOrderItem(
@@ -212,7 +213,7 @@ class AdminOrderRepository:
             )
 
             self.__session.add(order_item)
-            
+
             total_amount += original_price * item_quantity
             total_discount_amount += discounted_price * item_quantity
 
@@ -226,7 +227,7 @@ class AdminOrderRepository:
                     .where(ProductVariant.barcode == int(item_request.barcode))
                 )
                 product_variant = product_variant.scalar_one_or_none()
-                
+
                 if product_variant:
                     if product_variant.amount < item_request.quantity:
                         raise HTTPException(
@@ -253,14 +254,14 @@ class AdminOrderRepository:
             "created_at": admin_order.created_at,
             "updated_at": admin_order.updated_at,
         }
-    
-    async def create_new_order(self, admin_id: int) -> AdminOrderResponse:
-        admin_order = AdminOrder(by=admin_id)
+
+    async def create_new_order(self, admin_id: int, warehouse_id: int) -> AdminOrderResponse:
+        admin_order = AdminOrder(by=admin_id, warehouse_id=warehouse_id)
         self.__session.add(admin_order)
         await self.__session.commit()
-        
+
         await self.__session.refresh(admin_order)
-        
+
         return AdminOrderResponse(
             id=admin_order.id,
             by=admin_order.by,
@@ -277,14 +278,13 @@ class AdminOrderRepository:
             product_variants=[]
         )
 
-
-    async def update_status_order(self, admin_id: int, data: dict) -> dict:
+    async def update_status_order(self, admin_id: int, data: AdminOrderUpdate) -> dict:
         result = await self.__session.execute(
             select(AdminOrder)
             .where(
                 and_(
                     AdminOrder.by == admin_id,
-                    AdminOrder.status == AdminOrderStatusEnum.opened 
+                    AdminOrder.status == AdminOrderStatusEnum.opened
                 )
             )
             .options(selectinload(AdminOrder.product_variants))
@@ -311,15 +311,15 @@ class AdminOrderRepository:
         admin_order.payment_type = PaymentMethodEnum(data.payment_type) if admin_order.payment_type else PaymentMethodEnum.cash
         admin_order.user_name = data.user_name if data.user_name else admin_order.user_name
         admin_order.user_phone = data.user_phone if data.user_phone else admin_order.user_phone
-        admin_order.updated_at = datetime.utcnow()
-        
+        admin_order.updated_at = now_time()
+        # admin_order.warehouse_id =
+
         await self.__session.commit()
         return {
             "message": "Order closed successfully",
             "status": admin_order.status.value,
             "payment_method": admin_order.payment_type
         }
-
 
     async def get_all_closed_orders(self, admin_id: int, language: str, limit: int, offset: int) -> List[AdminOrderResponse] | None:
         result = await self.__session.execute(
@@ -357,7 +357,7 @@ class AdminOrderRepository:
         closed_orders = result.scalars().all()
 
         if not closed_orders:
-            return None
+            return []
 
         return [
             AdminOrderResponse(
@@ -381,7 +381,7 @@ class AdminOrderRepository:
                         product_variant=AdminProductVariantResponse(
                             id=item.product_variant.id,
                             barcode=str(item.product_variant.barcode),
-                            current_price=item.product_variant.current_price, 
+                            current_price=item.product_variant.current_price,
                             name=item.product_variant.product.name.get(language, ""),
                             main_image=item.product_variant.images[0].image if item.product_variant.images else "",
                             color=item.product_variant.color.name.get(language, "") if item.product_variant.color else "",
@@ -404,9 +404,6 @@ class AdminOrderRepository:
             )
             for order in closed_orders
         ]
-    
-
-
 
     async def get_active_promotion(self, product_variant_id: int) -> Optional[Promotion]:
         result = await self.__session.execute(

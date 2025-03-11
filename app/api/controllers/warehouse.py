@@ -32,7 +32,7 @@ class WarehouseController:
                     if role.permissions is None:
                         role.permissions = (
                             {}
-                        )  
+                        )
                     elif isinstance(role.permissions, str):
                         role.permissions = json.loads(role.permissions)
                     elif isinstance(role.permissions, dict):
@@ -58,7 +58,7 @@ class WarehouseController:
             )
 
     async def get_warehouse_by_id(
-        self, warehouse_id: int
+            self, warehouse_id: int
     ) -> Optional[WarehouseResponse]:
         warehouse = await self.__warehouse_repository.get_warehouse_by_id(warehouse_id)
         if not warehouse:
@@ -69,18 +69,12 @@ class WarehouseController:
         return warehouse
 
     async def create_warehouse(
-        self, warehouse_data: CreateWarehouseRequest, current_user: AdminUser
+            self, warehouse_data: CreateWarehouseRequest, current_user: AdminUser
     ) -> WarehouseCreateResponse:
-        try:
-            if not current_user.is_global_admin:
-                raise HTTPException(
-                    status_code=403, detail="Only global admins can create warehouses"
-                )
-        except Exception as e:
+        if not current_user.is_global_admin:
             raise HTTPException(
-                status_code=500, detail=f"Error checking global admin status: {str(e)}"
+                status_code=403, detail="Only global admins can create warehouses"
             )
-
         generated_password = secrets.token_urlsafe(10)
         hashed_password = bcrypt.hashpw(
             generated_password.encode("utf-8"), bcrypt.gensalt()
@@ -114,10 +108,10 @@ class WarehouseController:
         )
 
     async def update_warehouse(
-        self,
-        warehouse_id: int,
-        warehouse_data: CreateWarehouseRequest,
-        current_user: AdminUser,
+            self,
+            warehouse_id: int,
+            warehouse_data: CreateWarehouseRequest,
+            current_user: AdminUser,
     ) -> WarehouseCreateResponse:
         if not current_user.is_global_admin:
             raise HTTPException(
@@ -163,12 +157,12 @@ class WarehouseController:
         return await self.__warehouse_repository.delete_warehouse(warehouse_id)
 
     async def get_warehouse_applications(
-        self,
+            self,
     ) -> Sequence[WarehouseApplicationResponseSchema]:
         return await self.__warehouse_repository.get_warehouse_applications()
 
     async def get_warehouse_application_by_id(
-        self, application_id: int
+            self, application_id: int
     ) -> Optional[WarehouseApplicationResponseSchema]:
         app = await self.__warehouse_repository.get_warehouse_application_by_id(
             application_id
@@ -181,12 +175,12 @@ class WarehouseController:
         return app
 
     async def create_warehouse_application(
-        self, data: WarehouseApplicationCreateSchema
+            self, data: WarehouseApplicationCreateSchema
     ) -> WarehouseApplicationResponseSchema:
         return await self.__warehouse_repository.create_warehouse_application(data)
 
     async def update_warehouse_application(
-        self, application_id: int, data: WarehouseApplicationUpdateSchema
+            self, application_id: int, data: WarehouseApplicationUpdateSchema
     ) -> WarehouseApplicationResponseSchema:
         return await self.__warehouse_repository.update_warehouse_application(
             application_id, data

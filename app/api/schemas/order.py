@@ -81,7 +81,7 @@ class AdminOrderCreate(BaseModel):
     user_name: Optional[str] = None
     user_phone: Optional[str] = None
     total_amount: Decimal = Decimal('0')
-    total_amount_with_discount: Decimal = Decimal('0') 
+    total_amount_with_discount: Decimal = Decimal('0')
     payment_type: Optional[str]
     notes: Optional[str] = None
     created_at: datetime
@@ -92,13 +92,11 @@ class AdminOrderCreate(BaseModel):
         from_attributes = True
 
 
-
-
-
 class OrderItemRequest(BaseModel):
     barcode: str
     quantity: int = 1
     custom_price: Optional[Decimal] = None
+
 
 class CompleteOrderRequest(BaseModel):
     seller_id: Optional[int] = None
@@ -110,6 +108,7 @@ class CompleteOrderRequest(BaseModel):
 
     items: List[OrderItemRequest]
 
+
 class AdminOrderUpdate(BaseModel):
     status: str
     seller_id: Optional[int] = None
@@ -118,8 +117,6 @@ class AdminOrderUpdate(BaseModel):
     user_phone: str | None
     payment_type: Optional[str]
     with_discount: bool = Field(default=True, description="Whether to apply promotions/discounts")
-
-
 
 
 class AdminProductVariantResponse(BaseModel):
@@ -145,7 +142,7 @@ class AdminProductVariantResponse(BaseModel):
                 measure="N/A",
                 images=[]
             )
-            
+
         return cls(
             id=variant.id,
             barcode=str(variant.barcode),
@@ -157,13 +154,14 @@ class AdminProductVariantResponse(BaseModel):
             images=[img.image for img in variant.images]
         )
 
+
 class AdminOrderItemResponse(BaseModel):
     id: int
     order_id: int
     product_variant: AdminProductVariantResponse
     quantity: float
     price_per_unit: Decimal
-    total_amount_with_discount: Decimal = Decimal('0') 
+    total_amount_with_discount: Decimal = Decimal('0')
     price_with_discount: Decimal
     total_amount: Decimal
     payment_type: Optional[str] = None
@@ -180,12 +178,12 @@ class AdminOrderItemResponse(BaseModel):
     @classmethod
     def from_order_item(cls, order_item: 'AdminOrderItem', language: str) -> "AdminOrderItemResponse":
         product_variant_obj = getattr(order_item, 'product_variant', None)
-        
+
         return cls(
             id=order_item.id,
             order_id=order_item.order_id,
             product_variant=AdminProductVariantResponse.from_variant(
-                product_variant_obj, 
+                product_variant_obj,
                 language
             ),
             quantity=order_item.quantity,
@@ -200,7 +198,7 @@ class AdminOrderItemResponse(BaseModel):
 
 
 class AdminOrderItemReturnSchema(BaseModel):
-    order_id: int  
+    order_id: int
     return_quantity: int = Field(..., gt=0)  # Faqat musbat sonlar qabul qilinadi
 
     @validator('return_quantity')
@@ -208,7 +206,6 @@ class AdminOrderItemReturnSchema(BaseModel):
         if v <= 0:
             raise ValueError("Return quantity must be greater than 0")
         return v
-
 
 
 class AdminOrderResponse(AdminOrderCreate):

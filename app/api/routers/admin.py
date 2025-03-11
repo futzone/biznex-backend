@@ -6,13 +6,12 @@ from dateutil.parser import isoparse
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, Response, status
 from sqlalchemy import select, func
 
-
 from app.api.controllers.admin import AdminController
 from app.api.controllers.product.product import ProductController
 from app.api.models.product import Product
 from app.api.models.user import AdminUser
 from app.api.repositories.product.product import ProductRepository
-from app.api.schemas.product.product import ProductListResponse, WarehouseStatsResponse
+from app.api.schemas.product.product import WarehouseStatsResponse
 from app.api.utils.permission_checker import check_permission
 from app.api.utils.user import AuthUtils
 from app.core.databases.postgres import get_general_session
@@ -25,10 +24,10 @@ router = APIRouter()
 
 @router.post("/create", response_model=AdminUserResponse)
 async def create_admin(
-    admin_create: AdminUserCreate,
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
-    controller: AdminController = Depends(),
+        admin_create: AdminUserCreate,
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
+        controller: AdminController = Depends(),
 ):
     await check_permission(
         session=session,
@@ -42,10 +41,10 @@ async def create_admin(
 
 @router.post("/login")
 async def login_admin(
-    phone_number: str,
-    password: str,
-    response: Response,
-    controller: AdminController = Depends(),
+        phone_number: str,
+        password: str,
+        response: Response,
+        controller: AdminController = Depends(),
 ):
     return await controller.login_admin(phone_number, password, response)
 
@@ -54,20 +53,19 @@ async def login_admin(
     "/adminme", response_model=AdminUserResponse, status_code=status.HTTP_200_OK
 )
 async def get_current_admin_user(
-    request: Request,
-    controller: AdminController = Depends(),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        controller: AdminController = Depends(),
+        session: AsyncSession = Depends(get_general_session),
 ):
-
     return await controller.get_current_admin_user(request=request, session=session)
 
 
 @router.get("/get_admins/{warehouse_id}", response_model=List[AdminUserResponsee])
 async def get_admins_by_warehouse(
-    warehouse_id: int,
-    controller: AdminController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        warehouse_id: int,
+        controller: AdminController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
     """
     Berilgan warehouse_id bo'yicha adminlarni qaytarish.
@@ -85,9 +83,9 @@ async def get_admins_by_warehouse(
 
 
 @router.get(
-        "/get_top_seller",
-        response_model=List[TopSellerResponse],
-        status_code=status.HTTP_200_OK,
+    "/get_top_seller",
+    response_model=List[TopSellerResponse],
+    status_code=status.HTTP_200_OK,
 )
 @router.get(
     "/get_top_seller",
@@ -95,12 +93,12 @@ async def get_admins_by_warehouse(
     status_code=status.HTTP_200_OK,
 )
 async def get_top_sellers(
-    warehouse_id: int = Header(..., alias="warehouse_id"),
-    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
-    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
-    current_admin: AdminUser = Depends(get_current_admin_user),
-    controller: AdminController = Depends(),
-    session: AsyncSession = Depends(get_general_session)
+        warehouse_id: int = Header(..., alias="warehouse_id"),
+        start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+        end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+        current_admin: AdminUser = Depends(get_current_admin_user),
+        controller: AdminController = Depends(),
+        session: AsyncSession = Depends(get_general_session)
 ):
     await check_permission(
         session=session,
@@ -109,10 +107,10 @@ async def get_top_sellers(
         model_name="admin",
         action="read",
     )
-    
+
     parsed_start_date = None
     parsed_end_date = None
-    
+
     if start_date:
         try:
             parsed_start_date = datetime.fromisoformat(start_date)
@@ -121,7 +119,7 @@ async def get_top_sellers(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Invalid start_date format. Use YYYY-MM-DD"
             )
-    
+
     if end_date:
         try:
             parsed_end_date = datetime.fromisoformat(end_date)
@@ -130,13 +128,13 @@ async def get_top_sellers(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Invalid end_date format. Use YYYY-MM-DD"
             )
-    
+
     if parsed_start_date is None:
         parsed_start_date = datetime.now() - timedelta(days=30)
-    
+
     if parsed_end_date is None:
         parsed_end_date = datetime.now()
-    
+
     return await controller.get_top_seller(
         warehouse_id=warehouse_id,
         start_date=parsed_start_date,
@@ -146,11 +144,10 @@ async def get_top_sellers(
 
 @router.get("/warehouses/{warehouse_id}/stats_order_product")
 async def get_products_by_sale_status(
-    warehouse_id: int,
-    session: AsyncSession = Depends(get_general_session),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        warehouse_id: int,
+        session: AsyncSession = Depends(get_general_session),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
-
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -166,13 +163,12 @@ async def get_products_by_sale_status(
 
 @router.get("/warehouses/{warehouse_id}/stats", response_model=WarehouseStatsResponse)
 async def get_warehouse_stats(
-    warehouse_id: int,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    session: AsyncSession = Depends(get_general_session),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        warehouse_id: int,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        session: AsyncSession = Depends(get_general_session),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
-
     await check_permission(
         session=session,
         admin_id=current_admin.id,
@@ -207,14 +203,11 @@ async def get_warehouse_stats(
 
 @router.get("/dashboard", response_model=AdminDashboardResponse)
 async def get_admin_dashboard(
-    session: AsyncSession = Depends(get_general_session),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
-    controller: AdminController = Depends(),
-    # current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
+        warehouse_id: int = Header(..., alias="warehouse_id"),
+        controller: AdminController = Depends(),
+        # current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
-    
-
-
     # await check_permission(
     #     session=session,
     #     admin_id=current_admin.id,
@@ -231,14 +224,14 @@ async def get_admin_dashboard(
     # )
     # total_products = result.scalar()
 
-
     return await controller.get_admin_dashboard(warehouse_id)
+
 
 @router.get("/dashboard/stats")
 async def get_dashboard_stats(
-    warehouse_id: int = Header(..., alias="warehouse_id"),
-    controller: AdminController = Depends(),
-    # current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        warehouse_id: int = Header(..., alias="warehouse_id"),
+        controller: AdminController = Depends(),
+        # current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
     # await check_permission(
     #     session=session,

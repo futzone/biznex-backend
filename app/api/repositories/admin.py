@@ -16,6 +16,7 @@ from app.api.schemas.user import AdminDashboardResponse, BaseStats
 from app.core.databases.postgres import get_general_session
 from app.api.models.warehouse import admin_warehouse_roles
 from app.core.models.enums import AdminOrderStatusEnum, OrderStatusEnum
+from database.order_database import OrderDB
 
 
 class AdminRepository:
@@ -23,7 +24,7 @@ class AdminRepository:
         self.__session = session
 
     async def get_user_warehouse_role(
-        self, user_id: int, warehouse_id: int
+            self, user_id: int, warehouse_id: int
     ) -> Optional[AdminWarehouse]:
         query = (
             select(AdminWarehouse)
@@ -75,7 +76,7 @@ class AdminRepository:
         return result.scalars().first()
 
     async def get_user_by_id(
-        self, session: AsyncSession, user_id: int
+            self, session: AsyncSession, user_id: int
     ) -> Optional[AdminUser]:
         result = await session.execute(
             select(AdminUser)
@@ -99,21 +100,20 @@ class AdminRepository:
             )
         )
         return result.scalar_one_or_none()
-    
+
     async def get_top_seller(
-        self, 
-        warehouse_id: int, 
-        start_date: datetime = None, 
-        end_date: datetime = None
+            self,
+            warehouse_id: int,
+            start_date: datetime = None,
+            end_date: datetime = None
     ):
         if not start_date:
             start_date = datetime.now() - timedelta(days=30)
         if not end_date:
             end_date = datetime.now()
-        
+
         end_date = end_date.replace(hour=23, minute=59, second=59)
-        
-        
+
         query = (
             select(
                 AdminUser.id,
@@ -127,11 +127,11 @@ class AdminRepository:
                 func.sum(AdminOrderItem.total_amount).label("total_revenue"),
                 func.sum(AdminOrderItem.total_amount_with_discount).label("total_revenue_with_discount"),
                 func.sum(
-                    AdminOrderItem.total_amount_with_discount - 
+                    AdminOrderItem.total_amount_with_discount -
                     (AdminOrderItem.quantity * ProductVariant.current_price)
                 ).label("total_profit"),
-                (func.sum(AdminOrderItem.total_amount_with_discount) / 
-                func.count(distinct(AdminOrder.id))).label("average_order_value")
+                (func.sum(AdminOrderItem.total_amount_with_discount) /
+                 func.count(distinct(AdminOrder.id))).label("average_order_value")
             )
             .join(AdminOrder, AdminOrder.by == AdminUser.id)
             .join(AdminOrderItem, AdminOrderItem.order_id == AdminOrder.id)
@@ -176,7 +176,7 @@ class AdminRepository:
         return result.scalar_one_or_none()
 
     async def get_warehouse_role(
-        self, warehouse_id: int, role_id: int
+            self, warehouse_id: int, role_id: int
     ) -> Optional[AdminWarehouse]:
         query = select(AdminWarehouse).where(
             AdminWarehouse.warehouse_id == warehouse_id, AdminWarehouse.id == role_id
@@ -194,19 +194,16 @@ class AdminRepository:
         return result.unique().scalars().all()
 
     async def get_admin_dashboard(self, warehouse_id: int) -> AdminDashboardResponse:
-        today = datetime.utcnow()
-        yesterday = today - timedelta(days=1)
 
-        products_total = (await self.__session.execute(
-            select(func.count(Product.id))
-            .where(Product.warehouse_id == warehouse_id)
-        )).scalar()
+        tashkent_tz = ZoneInfo('Asia/Tashkent')
+        today = datetime.now(timezone.utc).astimezone(tashkent_tz)
+        yesterday = today - timedelta(days=1)
 
         products_today = (await self.__session.execute(
             select(func.count(ProductVariant.id))
             .join(Product, ProductVariant.product_id == Product.id)
             .where(and_(
-                func.date(ProductVariant.created_at) == today,
+                func.date(ProductVariant.created_at) == today.date(),
                 Product.warehouse_id == warehouse_id
             ))
         )).scalar()
@@ -215,17 +212,9 @@ class AdminRepository:
             select(func.count(ProductVariant.id))
             .join(Product, ProductVariant.product_id == Product.id)
             .where(and_(
-                func.date(ProductVariant.created_at) == yesterday,
+                func.date(ProductVariant.created_at) == yesterday.date(),
                 Product.warehouse_id == warehouse_id
             ))
-        )).scalar()
-
-        orders_total = (await self.__session.execute(
-            select(func.count(AdminOrder.id))
-            .join(AdminOrder.items)
-            .join(AdminOrderItem.product_variant)
-            .join(ProductVariant.product)
-            .where(AdminOrder.warehouse_id == warehouse_id)
         )).scalar()
 
         orders_today = (await self.__session.execute(
@@ -234,8 +223,9 @@ class AdminRepository:
             .join(AdminOrderItem.product_variant)
             .join(ProductVariant.product)
             .where(and_(
-                func.date(AdminOrder.created_at) == today,
-                AdminOrder.warehouse_id == warehouse_id
+                # AdminOrder.status == AdminOrderStatusEnum.completed,
+                func.date(AdminOrder.created_at) == today.date(),
+                Product.warehouse_id == warehouse_id
             ))
         )).scalar()
 
@@ -245,19 +235,9 @@ class AdminRepository:
             .join(AdminOrderItem.product_variant)
             .join(ProductVariant.product)
             .where(and_(
-                func.date(AdminOrder.created_at) == yesterday,
-                AdminOrder.warehouse_id == warehouse_id
-            ))
-        )).scalar()
-
-        pending_total = (await self.__session.execute(
-            select(func.count(AdminOrder.id))
-            .join(AdminOrder.items)
-            .join(AdminOrderItem.product_variant)
-            .join(ProductVariant.product)
-            .where(and_(
-                AdminOrder.status == AdminOrderStatusEnum.opened,
-                AdminOrder.warehouse_id == warehouse_id
+                # AdminOrder.status == AdminOrderStatusEnum.completed,
+                func.date(AdminOrder.created_at) == yesterday.date(),
+                Product.warehouse_id == warehouse_id
             ))
         )).scalar()
 
@@ -268,7 +248,7 @@ class AdminRepository:
             .join(ProductVariant.product)
             .where(and_(
                 AdminOrder.status == AdminOrderStatusEnum.opened,
-                func.date(AdminOrder.created_at) == today,
+                func.date(AdminOrder.created_at) == today.date(),
                 AdminOrder.warehouse_id == warehouse_id
             ))
         )).scalar()
@@ -280,18 +260,7 @@ class AdminRepository:
             .join(ProductVariant.product)
             .where(and_(
                 AdminOrder.status == AdminOrderStatusEnum.opened,
-                func.date(AdminOrder.created_at) == yesterday,
-                AdminOrder.warehouse_id == warehouse_id
-            ))
-        )).scalar()
-
-        completed_total = (await self.__session.execute(
-            select(func.count(AdminOrder.id))
-            .join(AdminOrder.items)
-            .join(AdminOrderItem.product_variant)
-            .join(ProductVariant.product)
-            .where(and_(
-                AdminOrder.status == AdminOrderStatusEnum.completed,
+                func.date(AdminOrder.created_at) == yesterday.date(),
                 AdminOrder.warehouse_id == warehouse_id
             ))
         )).scalar()
@@ -303,7 +272,7 @@ class AdminRepository:
             .join(ProductVariant.product)
             .where(and_(
                 AdminOrder.status == AdminOrderStatusEnum.completed,
-                func.date(AdminOrder.created_at) == today,
+                func.date(AdminOrder.created_at) == today.date(),
                 Product.warehouse_id == warehouse_id
             ))
         )).scalar()
@@ -315,7 +284,7 @@ class AdminRepository:
             .join(ProductVariant.product)
             .where(and_(
                 AdminOrder.status == AdminOrderStatusEnum.completed,
-                func.date(AdminOrder.created_at) == yesterday,
+                func.date(AdminOrder.created_at) == yesterday.date(),
                 AdminOrder.warehouse_id == warehouse_id
             ))
         )).scalar()
@@ -328,55 +297,26 @@ class AdminRepository:
         return AdminDashboardResponse(
             products=BaseStats(
                 growth_rate=calculate_growth(products_today, products_yesterday),
-                total_count=products_total
+                total_count=products_today
             ),
             orders=BaseStats(
                 growth_rate=calculate_growth(orders_today, orders_yesterday),
-                total_count=orders_total
+                total_count=orders_today
             ),
             pending_orders=BaseStats(
                 growth_rate=calculate_growth(pending_today, pending_yesterday),
-                total_count=pending_total
+                total_count=pending_today
             ),
             completed_orders=BaseStats(
                 growth_rate=calculate_growth(completed_today, completed_yesterday),
-                total_count=completed_total
+                total_count=completed_today
             )
         )
 
     async def get_hourly_orders_today(self, warehouse_id: int):
+        order_db = OrderDB()
         tashkent_tz = ZoneInfo('Asia/Tashkent')
         now_tashkent = datetime.now(timezone.utc).astimezone(tashkent_tz)
-        
-        start_of_day_tashkent = now_tashkent.replace(hour=0, minute=0, second=0, microsecond=0)
-        end_of_day_tashkent = now_tashkent.replace(hour=23, minute=59, second=59, microsecond=999999)
+        custom_fetch = await order_db.get_orders_by_datetime(target_datetime=now_tashkent, warehouse_id=warehouse_id)
 
-        start_of_day_utc = start_of_day_tashkent.astimezone(timezone.utc).replace(tzinfo=None)
-        end_of_day_utc = end_of_day_tashkent.astimezone(timezone.utc).replace(tzinfo=None)
-
-        query = (
-            select(
-                func.date_trunc(
-                    text("'hour'"), 
-                    func.timezone(text("'Asia/Tashkent'"), AdminOrder.updated_at)  
-                ).label("hour"),
-                func.count(AdminOrder.id).label("order_count")
-            )
-            .where(
-                and_(
-                    AdminOrder.status == AdminOrderStatusEnum.completed,
-                    AdminOrder.updated_at >= start_of_day_utc,
-                    AdminOrder.updated_at <= end_of_day_utc,
-                    AdminOrder.warehouse_id == warehouse_id
-                )
-            )
-            .group_by(
-                func.date_trunc(
-                    text("'hour'"), 
-                    func.timezone(text("'Asia/Tashkent'"), AdminOrder.updated_at) 
-                )
-            ) 
-        )
-
-        result = await self.__session.execute(query)
-        return result.all()
+        return custom_fetch

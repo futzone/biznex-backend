@@ -37,9 +37,19 @@ from app.api.routers.notification.notification import router as notification_rou
 from app.api.routers.device.device import router as device_router
 from app.api.routers.utils import router as utils_router
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import asyncpg
+
+from database.connection_string import connection_string
 
 settings: Settings = get_settings()
 scheduler = AsyncIOScheduler()
+
+
+async def set_timezone():
+    conn = await asyncpg.connect(connection_string())
+    await conn.execute("SET TIME ZONE 'Asia/Tashkent'")
+    await conn.close()
+    print('timezone set: Asia/Tashkent')
 
 
 async def start_scheduler():
@@ -71,6 +81,7 @@ def create_app() -> CORSMiddleware:
     async def startup_event():
         await register_chat_handlers(sio, app)
         await start_scheduler()
+        await set_timezone()
 
     os.makedirs("media/category", exist_ok=True)
     os.makedirs("media/profile_picture", exist_ok=True)
@@ -155,9 +166,9 @@ def create_app() -> CORSMiddleware:
     v1_router.include_router(
         report_router, prefix="/report", tags=["Report"]
     )
-    # v1_router.include_router(
-    #     utils_router, prefix="/utils", tags=["Utils"]
-    # )
+    v1_router.include_router(
+        utils_router, prefix="/utils", tags=["Utils"]
+    )
     v1_router.include_router(
         notification_router, prefix="/notification", tags=["Notification"]
     )

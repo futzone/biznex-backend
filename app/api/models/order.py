@@ -55,7 +55,6 @@ class OrderItem(Base):
         return f"<OrderItem id={self.id} order_id={self.order_id}>"
 
 
-
 class AdminOrder(Base):
     __tablename__ = "admin_orders"
     id = Column(Integer, primary_key=True)
@@ -67,7 +66,7 @@ class AdminOrder(Base):
     total_amount = Column(DECIMAL(10, 2), default=0)
     total_amount_with_discount = Column(DECIMAL(10, 2), default=0, nullable=True)
     notes = Column(Text, nullable=True)
-    warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=True)
+    warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
     payment_type = Column(ENUM(PaymentMethodEnum, name="payment_type"), nullable=False, default="cash")
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -97,8 +96,6 @@ class AdminOrderItem(Base):
     price_with_discount = Column(DECIMAL(10, 2), nullable=True)
     total_amount = Column(DECIMAL(10, 2), nullable=False)
     total_amount_with_discount = Column(DECIMAL(10, 2), nullable=True, default=0)
-    
-    
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -106,10 +103,9 @@ class AdminOrderItem(Base):
     order = relationship("AdminOrder", back_populates="items")
     product_variant = relationship("ProductVariant")
 
-
     def calculate_total(self):
         return self.quantity * self.price_per_unit
-        
+
     def calculate_total_with_discount(self):
         return self.quantity * (self.price_with_discount or self.price_per_unit)
 

@@ -15,7 +15,6 @@ from app.core.models.enums import AdminOrderStatusEnum
 router = APIRouter()
 
 
-
 @router.get("/all-orders", response_model=List[AdminOrderResponse] | None)
 async def get_all_closed_orders(
         session: AsyncSession = Depends(get_general_session),
@@ -29,10 +28,7 @@ async def get_all_closed_orders(
     return await controller.get_all_closed_orders(current_user.id, language, limit, offset)
 
 
-@router.get(
-        "/order/{order_id}",
-        response_model=AdminOrderResponse | None,
-)
+@router.get("/order/{order_id}", response_model=AdminOrderResponse | None)
 async def get_order_by_id(
         order_id: int,
         session: AsyncSession = Depends(get_general_session),
@@ -56,15 +52,17 @@ async def get_admin_order(
 
 @router.post("/order", response_model=AdminOrderCreate)
 async def create_order(
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
-    language: str = Header(..., alias="language"),
-)->AdminOrderResponse:
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
+        language: str = Header(..., alias="language"),
+        warehouse_id: int = Header(..., alias="warehouse_id"),
+) -> AdminOrderResponse:
     controller = AdminOrderController(session)
     try:
-        return await controller.create_admin_order(current_user.id, language)
+        return await controller.create_admin_order(current_user.id, language, warehouse_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.patch("/order", response_model=dict | None)
 async def close_admin_order(
@@ -72,20 +70,20 @@ async def close_admin_order(
         session: AsyncSession = Depends(get_general_session),
         current_user: AdminUser = Depends(get_current_admin_user),
         language: str = Header(..., alias="language"),
-)-> dict | None:
+) -> dict | None:
     controller = AdminOrderController(session)
     return await controller.close_current_order(current_user.id, data, language=language)
 
 
 @router.post(
-    "/offline/order",   
+    "/offline/order",
 )
 async def create_complate_order(
-    order_data: List[CompleteOrderRequest],
-    session: AsyncSession = Depends(get_general_session),
-    current_user: AdminUser = Depends(get_current_admin_user),
-    language: str = Header(..., alias="language"),
-    warehouse_id: int = Header(..., alias="warehouse_id"),
+        order_data: List[CompleteOrderRequest],
+        session: AsyncSession = Depends(get_general_session),
+        current_user: AdminUser = Depends(get_current_admin_user),
+        language: str = Header(..., alias="language"),
+        warehouse_id: int = Header(..., alias="warehouse_id"),
 ):
     controller = AdminOrderController(session)
     return await controller.create_complete_order(data=order_data, admin_id=current_user.id, language=language, warehouse_id=warehouse_id)

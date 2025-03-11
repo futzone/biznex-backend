@@ -25,21 +25,22 @@ from app.api.utils.user import AuthUtils
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import settings
 from app.core.databases.postgres import get_general_session
+from models.admin_model import OrderBaseModel
 
 settings = settings.get_settings()
 
 
 class AdminController:
     def __init__(
-        self,
-        admin_repo: AdminRepository = Depends(),
-        session: Session = Depends(get_general_session),
+            self,
+            admin_repo: AdminRepository = Depends(),
+            session: Session = Depends(get_general_session),
     ):
         self.__admin_repo = admin_repo
         self.__session = session
 
     async def get_user_owner_role(
-        self, user_id: int, warehouse_id: int
+            self, user_id: int, warehouse_id: int
     ) -> Optional[AdminWarehouse]:
         return await self.__admin_repo.get_user_warehouse_role(
             int(user_id), warehouse_id
@@ -49,7 +50,7 @@ class AdminController:
         return await self.__admin_repo.get_warehouse_roles(int(warehouse_id))
 
     async def create_user(
-        self, admin_create: AdminUserCreate, current_user: AdminUser
+            self, admin_create: AdminUserCreate, current_user: AdminUser
     ) -> AdminUserResponse:
         generated_password = secrets.token_urlsafe(10)
         hashed_password = bcrypt.hashpw(
@@ -60,8 +61,8 @@ class AdminController:
             admin_create.warehouse_role_id
         )
         if (
-            not warehouse_role
-            or warehouse_role.warehouse_id != admin_create.warehouse_id
+                not warehouse_role
+                or warehouse_role.warehouse_id != admin_create.warehouse_id
         ):
             raise HTTPException(status_code=404, detail="Warehouse role topilmadi")
 
@@ -94,7 +95,7 @@ class AdminController:
         admin = await self.__admin_repo.get_by_phone_number(phone_number)
 
         if not admin or not bcrypt.checkpw(
-            password.encode("utf-8"), admin.password.encode("utf-8")
+                password.encode("utf-8"), admin.password.encode("utf-8")
         ):
             raise HTTPException(
                 status_code=401, detail="Incorrect phone number or password."
@@ -138,21 +139,21 @@ class AdminController:
     async def get_is_global_admin(self, user_id: int, db_session: AsyncSession) -> bool:
         query = select(AdminUser.is_global_admin).where(AdminUser.id == user_id)
         result = await db_session.execute(query)
-        is_global_admin = result.scalar() 
+        is_global_admin = result.scalar()
         return is_global_admin
-    
+
     async def get_top_seller(
-        self, 
-        warehouse_id: int, 
-        start_date: datetime = None, 
-        end_date: datetime = None
+            self,
+            warehouse_id: int,
+            start_date: datetime = None,
+            end_date: datetime = None
     ) -> List[TopSellerResponse]:
         top_sellers = await self.__admin_repo.get_top_seller(
             warehouse_id=warehouse_id,
             start_date=start_date,
             end_date=end_date
         )
-        
+
         return [
             TopSellerResponse(
                 id=seller.id,
@@ -172,7 +173,7 @@ class AdminController:
         ]
 
     async def get_current_admin_user(
-        self, request: Request, session: AsyncSession
+            self, request: Request, session: AsyncSession
     ) -> AdminUserResponse:
         token = await AuthUtils.get_current_user_from_cookie(request)
         if not token:
@@ -230,7 +231,7 @@ class AdminController:
             )
 
     async def get_admins_by_warehouse_id(
-        self, warehouse_id: int
+            self, warehouse_id: int
     ) -> List[AdminUserResponsee]:
         admin_users = await self.__admin_repo.get_admins_by_warehouse_id(warehouse_id)
 
@@ -256,30 +257,36 @@ class AdminController:
 
     async def get_admin_dashboard(
             self,
-            warehouse_id, 
+            warehouse_id,
     ) -> AdminDashboardResponse:
 
         return await self.__admin_repo.get_admin_dashboard(warehouse_id)
-        
+
     async def get_hourly_orders_today_formatted(self, warehouse_id: int):
         hourly_orders = await self.__admin_repo.get_hourly_orders_today(warehouse_id)
 
         tashkent_tz = ZoneInfo('Asia/Tashkent')
         now_tashkent = datetime.now(timezone.utc).astimezone(tashkent_tz)
-        
-        start_of_day_tashkent = now_tashkent.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        now_temp = now_tashkent
+
+        start_of_day_tashkent = now_temp.replace(hour=0, minute=0, second=0, microsecond=0)
         end_of_day_tashkent = now_tashkent
-        
+
         result = {}
         current_time = start_of_day_tashkent
         while current_time <= end_of_day_tashkent:
             display_hour_key = current_time.strftime("%H:00")
-            result[display_hour_key] = 0
+            result[display_hour_key] = get_hour_order_count(time=current_time, orders=hourly_orders)
             current_time += timedelta(hours=1)
-        
-        for order in hourly_orders:
-            order_hour_tashkent = order.hour.astimezone(tashkent_tz)
-            display_hour_key = order_hour_tashkent.strftime("%H:00")
-            result[display_hour_key] = order.order_count
-        
+
         return result
+
+
+def get_hour_order_count(time: datetime, orders: List[OrderBaseModel]):
+    counter = 0
+    for order in orders:
+        if order.updated_at.hour == time.hour:
+            counter += 1
+
+    return counter

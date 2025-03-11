@@ -40,50 +40,46 @@ class WarehouseRepository:
     async def create_warehouse_with_owner(
         self, warehouse_data: dict, owner_data: dict, owner_permission: dict
     ) -> tuple[Warehouse, AdminUser]:
+        new_owner = AdminUser(
+            full_name=f"Owner {warehouse_data['name']}",
+            phone_number=owner_data["phone_number"],
+            password=owner_data["password"],
+            is_global_admin=False,
+        )
+        self.__session.add(new_owner)
+        await self.__session.flush()
+
+        new_warehouse = Warehouse(
+            name=warehouse_data["name"],
+            address=warehouse_data["address"],
+            description=warehouse_data.get("description"),
+            latitude=warehouse_data["latitude"],
+            longitude=warehouse_data["longitude"],
+            owner_phone_number=owner_data["phone_number"],
+            owner_id=new_owner.id,
+        )
+        self.__session.add(new_warehouse)
+        await self.__session.flush()
+
+        admin_warehouse = AdminWarehouse(
+            warehouse_id=new_warehouse.id,
+            name="Owner",
+            permissions=owner_permission,
+        )
+        self.__session.add(admin_warehouse)
+        await self.__session.commit()
+
         try:
-            new_owner = AdminUser(
-                full_name=f"Owner {warehouse_data['name']}",
-                phone_number=owner_data["phone_number"],
-                password=owner_data["password"],
-                is_global_admin=False,
+            insert_query = insert(admin_warehouse_roles).values(
+                admin_id=new_owner.id,
+                warehouse_role_id=admin_warehouse.id,
             )
-            self.__session.add(new_owner)
-            await self.__session.flush() 
-
-            new_warehouse = Warehouse(
-                name=warehouse_data["name"],
-                address=warehouse_data["address"],
-                description=warehouse_data.get("description"),
-                latitude=warehouse_data["latitude"],
-                longitude=warehouse_data["longitude"],
-                owner_phone_number=owner_data["phone_number"],
-                owner_id=new_owner.id,
-            )
-            self.__session.add(new_warehouse)
-            await self.__session.flush()
-
-            admin_warehouse = AdminWarehouse(
-                warehouse_id=new_warehouse.id,
-                name="Owner",
-                permissions=owner_permission,
-            )
-            self.__session.add(admin_warehouse)
+            await self.__session.execute(insert_query)
             await self.__session.commit()
-
-            try:
-                insert_query = insert(admin_warehouse_roles).values(
-                    admin_id=new_owner.id,
-                    warehouse_role_id=admin_warehouse.id,
-                )
-                await self.__session.execute(insert_query)
-                await self.__session.commit()
-            except Exception as e:
-                raise e
-
-            return new_warehouse, new_owner
         except Exception as e:
-            await self.__session.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
+            raise e
+
+        return new_warehouse, new_owner
 
     async def update_warehouse_with_owner(
         self, warehouse_data: dict, owner_data: dict, warehouse_id: int

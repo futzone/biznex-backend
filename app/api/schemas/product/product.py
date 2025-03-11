@@ -1,9 +1,8 @@
-from datetime import datetime
 from typing import List, Optional, TypeVar
-from pydantic import BaseModel, Field, conlist
+from pydantic import BaseModel, Field
 
-from app.api.schemas.product.color import ColorCreateSchema, ColorResponseSchema, ColorLanguageResponseSchema
-from app.api.schemas.product.size import SizeCreateSchema, SizeResponseSchema, SizeLanguageResponseSchema
+from app.api.schemas.product.color import ColorResponseSchema, ColorLanguageResponseSchema
+from app.api.schemas.product.size import SizeResponseSchema, SizeLanguageResponseSchema
 
 
 class ProductCreateSchema(BaseModel):
@@ -50,6 +49,7 @@ class ProductListResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class WarehouseStatsResponse(BaseModel):
     warehouse_id: int
@@ -192,16 +192,17 @@ class ProductFilterSchema(BaseModel):
     max_discount: Optional[float] = Field(None, ge=0, le=100)
     in_stock: Optional[bool] = None
     sort_by: str = Field(
-        default='created_at', 
+        default='created_at',
         pattern=r'^(created_at|price|discount)$'
     )
     sort_order: str = Field(
-        default='desc', 
+        default='desc',
         pattern=r'^(asc|desc)$'
     )
 
 
 T = TypeVar('T')
+
 
 class ProductListResponse(BaseModel):
     products: List[T]

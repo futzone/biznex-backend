@@ -56,7 +56,7 @@ async def get_products(
         limit: int = Query(10, alias="limit", ge=1),
         offset: int = Query(0, alias="offset", ge=0),
         controller: ProductController = Depends(),
-        warehouse_id: Optional[int] = Header(None, alias="warehouse_id"),
+        warehouse_id: Optional[int] = Header(None, alias="id"),
         language: str = Header(None, alias="language"),
 ) -> Sequence[ProductResponseSchema | ProductLanguageResponseSchema]:
     return await controller.get_products(limit=limit, offset=offset, language=language, warehouse_id=warehouse_id)

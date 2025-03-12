@@ -35,7 +35,7 @@ async def get_colors(
 async def get_color(
         color_id: int,
         controller: ColorController = Depends(),
-    language: str = Header(None, alias="language"),
+        language: str = Header(None, alias="language"),
 ):
     return await controller.get_color_by_id(color_id, language=language)
 
@@ -44,18 +44,17 @@ async def get_color(
     "/", response_model=ColorLanguageResponseSchema, status_code=status.HTTP_201_CREATED
 )
 async def create_color(
-    request: Request,
-    data: ColorCreateSchema,
-    controller: ColorController = Depends(),
-    session: AsyncSession = Depends(get_general_session),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        request: Request,
+        data: ColorCreateSchema,
+        controller: ColorController = Depends(),
+        session: AsyncSession = Depends(get_general_session),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 
 ):
-    warehouse_id = int(request.headers.get('id'))
+    # warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
-        warehouse_id=warehouse_id,
         model_name="color",
         action="create",
     )
@@ -67,18 +66,17 @@ async def create_color(
     "/{color_id}/", response_model=ColorUpdateSchema, status_code=status.HTTP_200_OK
 )
 async def update_color(
-    request: Request,
-    color_id: int,
-    data: ColorUpdateSchema,
-    controller: ColorController = Depends(),
-    session: AsyncSession = Depends(get_general_session),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        request: Request,
+        color_id: int,
+        data: ColorUpdateSchema,
+        controller: ColorController = Depends(),
+        session: AsyncSession = Depends(get_general_session),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
 ):
-    warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
         admin_id=current_admin.id,
-        warehouse_id=warehouse_id,
+        warehouse_id=None,
         model_name="color",
         action="create",
     )
@@ -88,16 +86,15 @@ async def update_color(
 
 @router.delete("/{color_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_color(
-    color_id: int,
-    controller: ColorController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        color_id: int,
+        controller: ColorController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
     if not current_admin.is_global_admin:
         raise HTTPException(
             status_code=status.HTTP_418_IM_A_TEAPOT,
             detail="You are teapot).",
         )
-
 
     await controller.delete_color(color_id)

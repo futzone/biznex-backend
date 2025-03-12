@@ -6,11 +6,11 @@ from app.api.models.warehouse import AdminWarehouse, Warehouse, admin_warehouse_
 
 
 async def check_permission(
-    session: AsyncSession,
-    admin_id: int,
-    warehouse_id: int,
-    model_name: str,
-    action: str,
+        session: AsyncSession,
+        admin_id: int,
+        model_name: str,
+        action: str,
+        warehouse_id: int = None,
 ) -> bool:
     """
     Foydalanuvchining berilgan warehouse_id va model_name uchun ruxsatini tekshiradi.

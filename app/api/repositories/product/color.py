@@ -28,7 +28,7 @@ class ColorRepository:
                 ColorResponseSchema(
                     id=item.id,
                     name=(item.name.get('uz') if item.name.get('uz') is not None else item.name.get('en')) if (item.name.get('uz') if item.name.get('uz') is not None else item.name.get(
-                        'en')) is not None else (f"{item.name}"),
+                        'en')) is not None else f"{item.name}",
                     hex_code=item.hex_code,
                 )
                 for item in items

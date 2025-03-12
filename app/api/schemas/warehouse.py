@@ -50,7 +50,7 @@ class WarehouseResponse(BaseModel):
     latitude: float
     longitude: float
     owner_id: int
-    roles: List[AdminWarehouseResponse] = []
+    # roles: Optional[List[AdminWarehouseResponse]] = []
 
     class Config:
         from_attributes = True

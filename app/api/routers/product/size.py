@@ -56,7 +56,6 @@ async def create_size(
         session: AsyncSession = Depends(get_general_session),
 ):
     try:
-        print(request.headers)
         warehouse_id = int(request.headers.get('id'))
 
         await check_permission(
@@ -69,9 +68,6 @@ async def create_size(
 
         return await controller.create_size(data)
     except Exception as e:
-        print("\n\n\n\n HEADERS: ")
-        print(request.headers)
-        print("\n\n\n\n")
         raise HTTPException(status_code=500, detail=f"{e}\n\n{request.headers}\n\n{request.scope}\n\n{request.state}\n\n{request.json()}")
 
 

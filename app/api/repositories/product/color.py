@@ -27,7 +27,7 @@ class ColorRepository:
             return [
                 ColorResponseSchema(
                     id=item.id,
-                    name=item.name.get(language),
+                    name=item.name.get('uz') if item.name.get('uz') is not None else item.name.get('en'),
                     hex_code=item.hex_code,
                 )
                 for item in items
@@ -64,7 +64,7 @@ class ColorRepository:
         return ColorLanguageResponseSchema.model_validate(color_obj)
 
     async def update_color(
-        self, color_id: int, data: ColorUpdateSchema
+            self, color_id: int, data: ColorUpdateSchema
     ) -> ColorLanguageResponseSchema:
         result = await self.__session.execute(select(Color).where(Color.id == color_id))
         color_obj = result.scalar_one_or_none()

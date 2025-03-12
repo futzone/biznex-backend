@@ -16,7 +16,6 @@ class ColorController:
         self.__repo = repo
 
     async def get_colors(self, language: str) -> List[ColorResponseSchema] | ColorLanguageResponseSchema:
-        await check_language(language)
         return await self.__repo.get_colors(language)
 
     async def get_color_by_id(self, color_id: int, language: str) -> ColorResponseSchema | ColorLanguageResponseSchema:

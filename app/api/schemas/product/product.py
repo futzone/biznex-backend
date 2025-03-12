@@ -1,7 +1,7 @@
 from typing import List, Optional, TypeVar
 from pydantic import BaseModel, Field
 
-from app.api.schemas.product.color import ColorResponseSchema, ColorLanguageResponseSchema
+from app.api.schemas.product.color import ColorResponseSchema
 from app.api.schemas.product.size import SizeResponseSchema, SizeLanguageResponseSchema
 
 
@@ -97,7 +97,7 @@ class ProductVariantSchema(BaseModel):
     discount: Optional[float] = None
     is_main: bool
     amount: float
-    color: Optional[ColorResponseSchema | ColorLanguageResponseSchema] = None
+    color: Optional[ColorResponseSchema] = None
     size: Optional[SizeResponseSchema | SizeLanguageResponseSchema] = None
     measure: str
     images: List[str]

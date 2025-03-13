@@ -1,5 +1,7 @@
 # app/api/routers/file.py
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from starlette.responses import Response
+
 from app.api.controllers.file import FileController
 from app.api.repositories.file import FileRepository
 from app.api.schemas.file import (
@@ -7,6 +9,7 @@ from app.api.schemas.file import (
     FileUploadRequest,
     FileUploadResponse,
 )
+from utils.receipt_utils import ReceiptData, ReceiptStyle, generate_receipt
 
 router = APIRouter()
 
@@ -32,3 +35,8 @@ async def get_file(
 ):
     filepath = request.headers.get("filepath")
     return await controller.download_file(filepath)
+
+
+@router.post("/printing/generate")
+async def create_receipt(data: ReceiptData, style: ReceiptStyle):
+    return Response(content="")

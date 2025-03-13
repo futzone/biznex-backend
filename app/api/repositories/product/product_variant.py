@@ -187,9 +187,14 @@ class ProductVariantRepository:
                 status_code=404, detail="ProductVariant not found or product mismatch"
             )
 
-        update_data = data.model_dump(exclude_unset=True)
+        update_data = data.model_dump(exclude_unset=False)
+
         for field, value in update_data.items():
-            setattr(variant_obj, field, value)
+            if value is not None:
+                setattr(variant_obj, field, value)
+
+        barcode_value = update_data.get("barcode", variant_obj.barcode)
+        setattr(variant_obj, "barcode", barcode_value)
 
         self.__session.add(variant_obj)
         await self.__session.commit()

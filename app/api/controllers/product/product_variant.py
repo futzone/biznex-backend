@@ -50,9 +50,6 @@ class ProductVariantController:
         pictures: Optional[List[str]] = None,
     ) -> ProductVariantResponseSchema:
         try:
-            if data.discount and data.discount > 0:
-                data.old_price = data.current_price
-                data.current_price = data.current_price * ((100 - data.discount) / 100)
             variant_resp = await self.__repo.create_variant(product_id, data, pictures)
             if variant_resp.is_main and variant_resp.product:
                 variant_resp.product = variant_resp.product.model_copy(
@@ -69,13 +66,6 @@ class ProductVariantController:
         data: ProductVariantUpdateSchema,
         pictures: Optional[List[str]] = None,
     ) -> ProductVariantResponseSchema:
-        if (
-            data.discount is not None
-            and data.discount > 0
-            and data.current_price is not None
-        ):
-            data.old_price = data.current_price
-            data.current_price = data.current_price * ((100 - data.discount) / 100)
         variant_resp = await self.__repo.update_variant(
             product_id, variant_id, data, pictures
         )

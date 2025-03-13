@@ -181,8 +181,6 @@ def create_app() -> CORSMiddleware:
 
     app.include_router(v1_router)
 
-    # app.add_event_handler("startup", start_scheduler)
-
     return CORSMiddleware(
         app,
         allow_origins=["*"],

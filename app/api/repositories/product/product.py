@@ -74,7 +74,7 @@ class ProductRepository:
         return [await self._build_product_response(product, language) for product in products]
 
     async def get_little_products_left(
-        self, warehouse_id: int, limit: int, offset: int, language: str | None, amount: int = 10
+            self, warehouse_id: int, limit: int, offset: int, language: str | None, amount: int = 10
     ) -> List[ProductResponseSchema | ProductLanguageResponseSchema]:
         result = await self.session.execute(
             select(Product)
@@ -99,21 +99,21 @@ class ProductRepository:
         return [await self._build_product_response(product, language) for product in products]
 
     async def get_product_variant_sales(
-        self,
-        language: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        warehouse_id: Optional[int] = None,
-        limit: int = 50,
-        offset: int = 0
+            self,
+            language: str,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None,
+            warehouse_id: Optional[int] = None,
+            limit: int = 50,
+            offset: int = 0
     ) -> List[ProductVariantSalesResponse]:
         query = select(
             ProductVariant.id,
             ProductVariant.barcode,
             Product.id.label("product_id"),
             Product.name.label("product_name"),
-            Color.hex_code.label("hex_code"), 
-            Size.size.label("size"),      
+            Color.hex_code.label("hex_code"),
+            Size.size.label("size"),
             Measure.name.label("measure"),
             func.sum(AdminOrderItem.quantity).label("total_quantity_sold"),
             func.sum(AdminOrderItem.total_amount).label("total_amount_sold"),
@@ -132,20 +132,20 @@ class ProductRepository:
             Measure, ProductVariant.measure_id == Measure.id
         )
         filters = []
-        
+
         filters.append(AdminOrder.status == AdminOrderStatusEnum.completed)
 
         if start_date:
             filters.append(AdminOrder.created_at >= start_date)
         if end_date:
             filters.append(AdminOrder.created_at <= end_date)
-        
+
         if warehouse_id:
             filters.append(AdminOrder.warehouse_id == warehouse_id)
-        
+
         if filters:
             query = query.where(and_(*filters))
-        
+
         query = query.group_by(
             ProductVariant.id,
             ProductVariant.barcode,
@@ -155,19 +155,19 @@ class ProductRepository:
             Size.size,
             Measure.name
         ).order_by(func.sum(AdminOrderItem.quantity).desc())
-        
+
         query = query.limit(limit).offset(offset)
-        
+
         result = await self.session.execute(query)
         rows = result.all()
-        
+
         if not rows:
             return []
-        
+
         sales_data = []
         for row in rows:
             product_name = row.product_name.get(language, "") if row.product_name else ""
-                       
+
             sales_data.append(
                 ProductVariantSalesResponse(
                     variant_id=row.id,
@@ -182,16 +182,16 @@ class ProductRepository:
                     order_count=row.order_count
                 )
             )
-        
+
         return sales_data
 
     async def search_products(
-        self,
-        filters: ProductFilterSchema,
-        language: str = 'uz',
-        limit: int = 10,
-        offset: int = 0,
-        similarity_threshold: float = 0.1
+            self,
+            filters: ProductFilterSchema,
+            language: str = 'uz',
+            limit: int = 10,
+            offset: int = 0,
+            similarity_threshold: float = 0.1
     ) -> tuple[list[ProductResponseSchema], int]:
         stmt = (
             select(Product)
@@ -239,7 +239,7 @@ class ProductRepository:
             conditions.append(
                 Product.variants.any(
                     ProductVariant.color_id.in_(
-                        [int(cid) for cid in filters.color_id] 
+                        [int(cid) for cid in filters.color_id]
                     )
                 )
             )
@@ -249,11 +249,11 @@ class ProductRepository:
             conditions.append(
                 Product.variants.any(
                     ProductVariant.size_id.in_(
-                        [int(sid) for sid in filters.size_id] 
+                        [int(sid) for sid in filters.size_id]
                     )
                 )
             )
-            
+
         if filters.min_price is not None:
             conditions.append(Product.variants.any(ProductVariant.current_price >= filters.min_price))
         if filters.max_price is not None:
@@ -289,9 +289,9 @@ class ProductRepository:
                 .group_by(ProductVariant.product_id)
                 .subquery()
             )
-            
+
             stmt = stmt.join(subq, Product.id == subq.c.product_id, isouter=True)
-            
+
             sort_field = {
                 'price': subq.c.min_price,
                 'discount': subq.c.max_discount
@@ -365,10 +365,12 @@ class ProductRepository:
                 if language is not None:
                     color = ColorResponseSchema(
                         id=variant.color.id if variant.color else None,
-                        name=variant.color.name.get(language) if variant.color else None,
+                        name=(variant.color.name.get(language if language is not None else 'uz') if variant.color else None) if (variant.color.name.get(
+                            language if language is not None else 'uz') if variant.color else None) is not None else (
+                            f"{variant.color.name}"),
                         hex_code=variant.color.hex_code if variant.color else None,
                     ) if variant.color else None
-                    
+
                     size = SizeResponseSchema(
                         id=variant.size.id if variant.size else None,
                         size=variant.size.size if variant.size else None,
@@ -378,7 +380,6 @@ class ProductRepository:
                 else:
                     color = ColorLanguageResponseSchema.model_validate(variant.color) if variant.color else None
                     size = SizeLanguageResponseSchema.model_validate(variant.size) if variant.size else None
-                    
 
                 variant_data = {
                     "id": variant.id,
@@ -456,7 +457,7 @@ class ProductRepository:
             )
 
     async def get_recomended_products(
-        self, subcategory_id: int, limit: int, offset: int, language: str
+            self, subcategory_id: int, limit: int, offset: int, language: str
     ) -> Sequence[ProductResponseSchema]:
         result = await self.session.execute(
             select(Product)
@@ -467,7 +468,7 @@ class ProductRepository:
                 selectinload(Product.ratings),
                 selectinload(Product.variants).selectinload(ProductVariant.color),
                 selectinload(Product.variants).selectinload(ProductVariant.size),
-                selectinload(Product.subcategory) 
+                selectinload(Product.subcategory)
             )
             .limit(limit)
             .offset(offset)
@@ -476,7 +477,7 @@ class ProductRepository:
         return [await self._build_product_response(prod, language) for prod in products]
 
     async def get_products(
-        self, limit: int, offset: int, language: str | None
+            self, limit: int, offset: int, language: str | None
     ) -> list[ProductResponseSchema] | ProductLanguageResponseSchema:
         result = await self.session.execute(
             select(Product)
@@ -497,11 +498,11 @@ class ProductRepository:
         for product in products:
             response = await self._build_product_response(product, language)
             responses.append(response)
-        
+
         return responses
 
     async def get_products_by_warehouse_id(
-        self, limit: int, offset: int, warehouse_id: int, language: str | None
+            self, limit: int, offset: int, warehouse_id: int, language: str | None
     ) -> list[ProductResponseSchema] | ProductLanguageResponseSchema:
         result = await self.session.execute(
             select(Product)
@@ -518,34 +519,34 @@ class ProductRepository:
             .offset(offset)
         )
         products = result.scalars().all()
-        
+
         responses = []
         for product in products:
             response = await self._build_product_response(product, language)
             responses.append(response)
-        
+
         return responses
 
     async def _build_product_response(
-        self, product: Product, language: str | None = None
+            self, product: Product, language: str | None = None
     ) -> ProductResponseSchema | ProductLanguageResponseSchema:
         ratings = [r.rating for r in product.ratings] if product.ratings else []
         average_rating = sum(ratings) / len(ratings) if ratings else None
 
         main_variant = None
         main_image = None
-        current_price = 0  
-        old_price = 0  
-        
+        current_price = 0
+        old_price = 0
+
         color_codes = []
         sizes = []
-        
+
         for variant in product.variants:
             if variant.color and variant.color.hex_code not in color_codes:
                 color_codes.append(variant.color.hex_code)
             if variant.size and variant.size.size not in sizes:
                 sizes.append(variant.size.size)
-                
+
             if variant.is_main:
                 main_variant = variant
                 main_image = variant.images[0].image if variant.images else None
@@ -569,7 +570,7 @@ class ProductRepository:
                 id=product.id,
                 rating=average_rating,
                 main_image=main_image,
-                name=product.name, 
+                name=product.name,
                 description=product.description,
                 product_information_id=product.product_information_id,
                 warehouse_id=product.warehouse_id,
@@ -581,14 +582,14 @@ class ProductRepository:
                 color_code=color_codes,
                 size=sizes
             )
-        
+
         return ProductResponseSchema(
             id=product.id,
             rating=average_rating,
             current_price=current_price,
             old_price=old_price,
             main_image=main_image,
-            name=product.name.get(language, ""), 
+            name=product.name.get(language, ""),
             description=product.description.get(language) if product.description else None,
             product_information_id=product.product_information_id,
             warehouse_id=product.warehouse_id,
@@ -598,7 +599,6 @@ class ProductRepository:
             color_code=color_codes,
             size=sizes
         )
-
 
     async def get_products_by_category_id(
             self, limit: int, offset: int, category_id: int, language: str | None = None
@@ -649,11 +649,11 @@ class ProductRepository:
         self.session.add(new_product)
         await self.session.commit()
         await self.session.refresh(new_product)
-        
+
         await self.session.refresh(new_product, ['subcategory'])
 
-        total_stock = 0 
-        color_codes = [] 
+        total_stock = 0
+        color_codes = []
         sizes = []
 
         return ProductLanguageResponseSchema(
@@ -697,9 +697,9 @@ class ProductRepository:
             if hasattr(product, field):
                 setattr(product, field, value)
 
-        self.session.add(product) 
+        self.session.add(product)
         await self.session.commit()
-        await self.session.refresh(product) 
+        await self.session.refresh(product)
 
         return await self.get_product_by_id(product_id)
 
@@ -709,7 +709,7 @@ class ProductRepository:
             .options(
                 selectinload(Product.variants),
                 selectinload(Product.ratings),
-                selectinload(Product.wishlists) 
+                selectinload(Product.wishlists)
             )
             .where(Product.id == product_id)
         )
@@ -756,7 +756,7 @@ class ProductRepository:
         #     debt_orders_sum=float(payment_stats.debt or 0.0),
         # )
         return {
-            "order_stats": order_stats ,
+            "order_stats": order_stats,
             "product_stats": product_stats,
             "payment_stats": payment_stats,
         }

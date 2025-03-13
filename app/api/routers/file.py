@@ -5,6 +5,7 @@ from app.api.schemas.file import FileUploadResponse
 
 router = APIRouter()
 
+
 def get_file_controller() -> FileController:
     return FileController(FileRepository())
 

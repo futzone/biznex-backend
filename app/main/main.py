@@ -2,8 +2,6 @@ import os
 import logging
 from fastapi import APIRouter, FastAPI
 from fastapi.staticfiles import StaticFiles
-import socketio
-from app.api.routers.chat import register_chat_handlers
 from app.api.utils.backup_database import backup_database
 from app.core.settings import get_settings, Settings
 from starlette.middleware.cors import CORSMiddleware
@@ -20,7 +18,6 @@ from app.api.routers.product.color import router as color_router
 from app.api.routers.product.measure import router as measure_router
 from app.api.routers.product.product import router as product_router
 from app.api.routers.product.promotion import router as promotion_router
-from app.api.routers.product.product_image import router as product_image_router
 from app.api.routers.user import router as user_router
 from app.api.routers.admin import router as admin_router
 from app.api.routers.admin_order import router as admin_order_router
@@ -40,6 +37,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncpg
 
 from database.connection_string import connection_string
+from database.init import close_db, init_db
 
 settings: Settings = get_settings()
 scheduler = AsyncIOScheduler()
@@ -66,22 +64,17 @@ def create_app() -> CORSMiddleware:
         title=settings.PROJECT_NAME + " API",
         description=settings.PROJECT_DESCRIPTION,
         version=settings.PROJECT_VERSION,
-
     )
-    sio = socketio.AsyncServer(
-        async_mode='asgi',
-        cors_allowed_origins='*',
-        logger=True,
-        engineio_logger=True
-    )
-
-    app.mount("/socket.io", socketio.ASGIApp(sio))
 
     @app.on_event("startup")
     async def startup_event():
-        await register_chat_handlers(sio, app)
+        await init_db()
         await start_scheduler()
         await set_timezone()
+
+    @app.on_event("shutdown")
+    async def shutdown():
+        await close_db()
 
     os.makedirs("media/category", exist_ok=True)
     os.makedirs("media/profile_picture", exist_ok=True)

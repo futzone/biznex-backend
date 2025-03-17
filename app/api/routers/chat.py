@@ -1,87 +1,44 @@
-import json
+import datetime
 import logging
-from socketio import AsyncServer
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from app.api.controllers.chat import ChatController
 from app.api.repositories.chat import ChatRepository
-from app.api.schemas.chat_schema import ChatMessage, ChatHistoryResponse
 from app.core.databases.postgres import get_general_session
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
+from database.chat_history_database import ChatHistoryDB
+from models.chat_history_model import ChatMessage
+from utils.message_generator import generate_response
+
 logger = logging.getLogger(__name__)
+from models.chat_history_model import ChatHistoryModel
 
 router = APIRouter()
 
 
-@router.get("/history/{user_id}", response_model=List[ChatHistoryResponse])
+@router.get("/history/{user_id}", response_model=List[ChatHistoryModel])
 async def get_chat_history(user_id: int, limit: int = 100):
-    async for session in get_general_session():
-        try:
-            repo = ChatRepository(session)
-            controller = ChatController(repo)
-            history = await controller.get_chat_history(user_id, limit)
-            return history
-        except Exception as e:
-            logger.error(f"Error getting chat history: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
-        finally:
-            await session.close()
+    history_db = ChatHistoryDB()
+    chat_history = await history_db.get_messages(user_id=user_id, limit=limit, offset=0)
 
-async def register_chat_handlers(sio: AsyncServer, router: APIRouter):
-    
-    @sio.on('connect')
-    async def connect(sid, environ):
-        logger.info(f"Client connected: {sid}")
+    return chat_history
 
-    @sio.on('disconnect')
-    async def disconnect(sid):
-        logger.info(f"Client disconnected: {sid}")
 
-    @sio.on('message')
-    async def handle_message(sid, data):
-        logger.info(f"Received message from {sid}: {data}")
+@router.post("/history/{user_id}", response_model=List[ChatHistoryModel])
+async def send_message(user_id: int, message: ChatMessage):
+    history_db = ChatHistoryDB()
+    chat_message = ChatHistoryModel(
+        user_id=user_id, message=message.message,
+        is_bot=False, timestamp=datetime.datetime.utcnow()
+    )
+    await history_db.create_message(message=chat_message)
+    message_reply = generate_response(message.message)
+    chat_message_bot = ChatHistoryModel(
+        user_id=user_id, message=message_reply,
+        is_bot=True, timestamp=datetime.datetime.utcnow()
+    )
+    await history_db.create_message(message=chat_message_bot)
 
-        try:
-            # Parse data if it's a string
-            if isinstance(data, str):
-                try:
-                    data = json.loads(data)
-                except json.JSONDecodeError as e:
-                    logger.error(f"JSON parsing error: {str(e)}")
-                    await sio.emit("error", {"error": "JSON format noto'g'ri!"}, to=sid)
-                    return
-            
-            if not isinstance(data, dict):
-                logger.error(f"Invalid data format: {type(data)}")
-                await sio.emit("error", {"error": "Noto'g'ri format: JSON obyekt kutilgan edi!"}, to=sid)
-                return
-            
-            # Process message
-            async for session in get_general_session():
-                try:
-                    repo = ChatRepository(session)
-                    controller = ChatController(repo)
-                    
-                    logger.info(f"Processing message data: {data}")
-                    message_data = ChatMessage(**data)
-                    logger.info(f"Validated message data: {message_data.dict()}")
-                    
-                    response = await controller.process_message(
-                        user_id=message_data.user_id,
-                        message=message_data.message,
-                        session=session
-                    )
-                    
-                    logger.info(f"Sending response to {sid}")
-                    await sio.emit('chat_response', response.dict(), to=sid)
-                except Exception as e:
-                    logger.error(f"Error processing message: {str(e)}")
-                    await sio.emit('error', {'error': str(e)}, to=sid)
-                finally:
-                    await session.close()
-        except Exception as e:
-            logger.error(f"Unhandled error: {str(e)}")
-            await sio.emit("error", {"error": str(e)}, to=sid)
+    chat_history = await history_db.get_messages(user_id=user_id, limit=100, offset=0)
 
-    return router
+    return chat_history

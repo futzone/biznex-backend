@@ -18,14 +18,13 @@ class CategoryController:
         self.__category_repository = category_repository
 
     async def get_warehouse_categories(self, warehouse_id, language):
-        await check_language(language)
         if warehouse_id:
             return await self.__category_repository.get_warehouse_categories(warehouse_id, language)
 
         return await self.__category_repository.get_categories(language)
 
     async def get_category_by_id(
-        self, warehouse_id, category_id: int, language: str
+            self, warehouse_id, category_id: int, language: str
     ) -> List[CategoryResponseSchema]:
 
         await check_language(language)
@@ -36,7 +35,7 @@ class CategoryController:
         return await self.__category_repository.get_category_by_id(category_id, language)
 
     async def create_category(
-        self, warehouse_id: int, data: CategoryCreateSchema
+            self, warehouse_id: int, data: CategoryCreateSchema
     ) -> CategoryCreateResponseSchema:
 
         translated_name = await translate_text(data.name)
@@ -50,7 +49,7 @@ class CategoryController:
         )
 
     async def update_category(
-        self, category_id: int, data: CategoryUpdateSchema
+            self, category_id: int, data: CategoryUpdateSchema
     ) -> CategoryCreateResponseSchema:
         data.name = await translate_text(data.name)
         data.description = (

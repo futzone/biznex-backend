@@ -43,12 +43,10 @@ async def get_warehouse_categories(
         language: str = Header(None, alias="language"),
         controller: CategoryController = Depends(),
 ):
-    warehouse_id = int(request.headers.get('id'))
-    if warehouse_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Warehouse not found",
-        )
+    id_str = request.headers.get('id')
+    warehouse_id = None
+    if id_str is not None:
+        warehouse_id = int(request.headers.get('id'))
     return await controller.get_warehouse_categories(warehouse_id, language)
 
 

@@ -54,7 +54,7 @@ async def init_postgres() -> None:
         raise e
 
 
-async def get_postgres() -> asyncpg.Pool:
+def get_postgres() -> asyncpg.Pool:
     global conn_pool
     if conn_pool is None:
         raise ConnectionError("PostgreSQL connection pool is not initialized.")

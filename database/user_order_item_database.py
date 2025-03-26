@@ -13,7 +13,7 @@ class UserOrderItemDB:
                     CREATE TABLE IF NOT EXISTS order_items (
                         id SERIAL PRIMARY KEY,
                         order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-                        product_id INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+                        product_id INT NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
                         quantity INT NOT NULL,
                         total_amount FLOAT NOT NULL,
                         created_at TIMESTAMPTZ DEFAULT now(),

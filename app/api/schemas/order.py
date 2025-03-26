@@ -3,24 +3,8 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
 from typing import List, Optional
-from enum import Enum
-
-from app.api.models.order import AdminOrderItem
 from app.api.models.product import ProductVariant
-from app.core.models.enums import AdminOrderStatusEnum
-
-
-class OrderStatusEnum(str, Enum):
-    pending = "pending"
-    completed = "completed"
-    canceled = "canceled"
-    # Add other statuses as required
-
-
-class OrderTypeEnum(str, Enum):
-    regular = "regular"
-    express = "express"
-    # Add other types as required
+from app.core.models.enums import AdminOrderStatusEnum, OrderStatusEnum, OrderTypeEnum
 
 
 class OrderItemBase(BaseModel):
@@ -199,7 +183,7 @@ class AdminOrderItemResponse(BaseModel):
 
 class AdminOrderItemReturnSchema(BaseModel):
     order_id: int
-    return_quantity: int = Field(..., gt=0)  # Faqat musbat sonlar qabul qilinadi
+    return_quantity: int = Field(..., gt=0)
 
     @validator('return_quantity')
     def validate_return_quantity(cls, v):

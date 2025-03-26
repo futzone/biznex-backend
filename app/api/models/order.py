@@ -3,9 +3,9 @@ from datetime import datetime
 from sqlalchemy import DECIMAL, Column, Integer, Float, DateTime, ForeignKey, func, text, String, Numeric, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ENUM
-from decimal import Decimal
+from app.api.schemas.order import OrderStatusEnum, OrderTypeEnum
 from app.core.models.base import Base
-from app.core.models.enums import OrderTypeEnum, OrderStatusEnum, AdminOrderStatusEnum, PaymentMethodEnum
+from app.core.models.enums import AdminOrderStatusEnum, PaymentMethodEnum
 
 
 class Order(Base):
@@ -75,7 +75,6 @@ class AdminOrder(Base):
 
     admin = relationship("AdminUser", foreign_keys=[by], back_populates="orders")
     seller_admin = relationship("AdminUser", foreign_keys=[seller], back_populates="seller_orders")
-    # Add relationship to AdminOrderItem
     items = relationship("AdminOrderItem", back_populates="order", cascade="all, delete-orphan")
     product_variants = relationship("AdminOrderItem", back_populates="order", overlaps="items", viewonly=True)
     warehouse = relationship("Warehouse", back_populates="admin_order")

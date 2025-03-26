@@ -1,12 +1,5 @@
 import enum
-from typing import List, Dict
-
 from enum import Enum
-
-
-class OrderTypeEnum(str, Enum):
-    online = "online"
-    offline = "offline"
 
 
 class AdminOrderStatusEnum(str, Enum):
@@ -21,20 +14,21 @@ class PaymentMethodEnum(str, Enum):
     debt = "debt"
 
 
-
 class PaymentStatusEnum(str, Enum):
     pending = "pending"
     completed = "completed"
     failed = "failed"
 
 
-class OrderStatusEnum(str, enum.Enum):
-    ORDERED = "Ordered"
-    PENDING = "Pending"
-    PACKING = "Packing"
-    SHIPPING = "Shipping"
-    SHIPPED = "Shipped"
-    CANCELLED = "Cancelled"
+class OrderStatusEnum(str, Enum):
+    pending = "pending"
+    completed = "completed"
+    canceled = "canceled"
+
+
+class OrderTypeEnum(str, Enum):
+    regular = "regular"
+    express = "express"
 
 
 class UserRolesEnum(str, enum.Enum):

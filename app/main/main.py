@@ -1,5 +1,7 @@
 import os
 import logging
+from contextlib import asynccontextmanager
+
 from fastapi import APIRouter, FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.api.utils.backup_database import backup_database
@@ -35,9 +37,8 @@ from app.api.routers.device.device import router as device_router
 from app.api.routers.utils import router as utils_router
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncpg
-
 from database.connection_string import connection_string
-from database.init import close_db, init_db
+from database.init import init_db, init_postgres, close_postgres
 
 settings: Settings = get_settings()
 scheduler = AsyncIOScheduler()
@@ -57,9 +58,17 @@ async def start_scheduler():
     scheduler.start()
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_postgres()
+    yield
+    await close_postgres()
+
+
 def create_app() -> CORSMiddleware:
     logging.basicConfig(level=logging.INFO)
     app = FastAPI(
+        lifespan=lifespan,
         docs_url="/MTFTc0t2czE5WUpLTnJGK21Qd00vajVrb3g0NWRTUTA5a2MwVTVnVzkydVUrOWVnWnlxbjlZK1YwL0tUU3VTMw/docs",
         title=settings.PROJECT_NAME + " API",
         description=settings.PROJECT_DESCRIPTION,
@@ -71,10 +80,6 @@ def create_app() -> CORSMiddleware:
         await init_db()
         await start_scheduler()
         await set_timezone()
-
-    @app.on_event("shutdown")
-    async def shutdown():
-        await close_db()
 
     os.makedirs("media/category", exist_ok=True)
     os.makedirs("media/profile_picture", exist_ok=True)

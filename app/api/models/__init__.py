@@ -33,8 +33,6 @@ __all__ = (
     "User",
     "AdminUser",
     "SMSCode",
-    "Order",
-    "OrderItem",
     "AdminOrder",
     "AdminOrderItem",
     "Notification",

@@ -11,6 +11,7 @@ from app.core.settings import get_settings
 
 settings = get_settings()
 
+
 postgres_url = f"{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DATABASE}"
 
 

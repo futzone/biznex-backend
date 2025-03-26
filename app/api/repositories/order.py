@@ -2,7 +2,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.api.models.order import Order, OrderItem
-from app.api.schemas.order import OrderCreate, OrderItemCreate
+from app.api.schemas.order import OrderCreate, OrderItemCreate, OrderStatusEnum, OrderTypeEnum
 from app.core.databases.postgres import get_general_session
 
 
@@ -15,15 +15,12 @@ class OrderRepository:
         return result.scalars().first()
 
     async def create(self, order_create: OrderCreate) -> Order:
-        order = Order(**order_create.dict())
+        order_data = order_create.model_dump(exclude={"items"})
+        order = Order(**order_data)
+
         self.db.add(order)
         await self.db.commit()
         await self.db.refresh(order)
-
-        for item in order_create.items:
-            order_item = OrderItem(**item.dict(), order_id=order.id)
-            self.db.add(order_item)
-        await self.db.commit()
 
         return order
 

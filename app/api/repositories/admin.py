@@ -15,7 +15,7 @@ from app.api.models.warehouse import AdminWarehouse, Warehouse
 from app.api.schemas.user import AdminDashboardResponse, BaseStats
 from app.core.databases.postgres import get_general_session
 from app.api.models.warehouse import admin_warehouse_roles
-from app.core.models.enums import AdminOrderStatusEnum, OrderStatusEnum
+from app.core.models.enums import AdminOrderStatusEnum
 from database.order_database import OrderDB
 
 

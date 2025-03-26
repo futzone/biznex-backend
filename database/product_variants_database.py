@@ -1,11 +1,9 @@
 from datetime import datetime
-
-from database.init import pool
 from models.product_variant_model import ProductVariantModel
 
 
 class ProductVariantsDB:
-    def __init__(self):
+    def __init__(self, pool):
         self.pool = pool
 
     async def create_variant(self, variant: ProductVariantModel):

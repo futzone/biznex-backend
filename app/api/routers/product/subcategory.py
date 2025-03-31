@@ -30,7 +30,7 @@ async def get_subcategories(
         controller: SubcategoryController = Depends(),
         language: str = Header(default="uz", alias="language"),
 ) -> Sequence[SubcategoryResponseSchema]:
-    warehouse_id = int(request.headers.get('id'))
+    warehouse_id = request.headers.get('id')
     return await controller.get_subcategories(category_id, language, warehouse_id)
 
 

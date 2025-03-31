@@ -2,11 +2,8 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
-
 from app.api.controllers.user import UserController
-from app.api.models.user import AdminUser
-from app.api.routers.admin import get_current_admin_user
-from app.api.schemas.order import OrderCreate, Order, OrderItemCreate
+from app.api.schemas.order import OrderCreate, Order
 from app.api.controllers.order import OrderController
 from app.core.databases.postgres import get_general_session
 from database.init import get_postgres
@@ -22,7 +19,7 @@ async def create_order(request: Request, model: UserOrderModel, controller: User
     return await OrderApiRouter.create_order(controller=controller, request=request, model=model, pool=pool)
 
 
-@router.get("/orders")
+@router.get("/orders", response_model=None)
 async def get_order(request: Request, model: PaginationModel, controller: UserController = Depends(), pool: asyncpg.Pool = Depends(get_postgres)):
     return await OrderApiRouter.get_user_orders(controller=controller, request=request, model=model, pool=pool)
 

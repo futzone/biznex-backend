@@ -16,19 +16,19 @@ from app.api.utils.check_language import check_language
 
 class SubcategoryController:
     def __init__(
-        self,
-        subcategory_repository: SubcategoryRepository = Depends(),
-        category_repository: CategoryRepository = Depends(),
+            self,
+            subcategory_repository: SubcategoryRepository = Depends(),
+            category_repository: CategoryRepository = Depends(),
     ):
         self.__subcategory_repository = subcategory_repository
         self.__category_repository = category_repository
 
     async def get_subcategories(
-        self, category_id: Optional[int], language, warehouse_id
+            self, category_id: Optional[int], language, warehouse_id
     ) -> Sequence[SubcategoryResponseSchema] | SubcategoryCreateResponseSchema:
         if category_id is not None:
             res = await self.__category_repository.get_warehouse_category_by_id(
-                warehouse_id, category_id, language
+                category_id, language
             )
             if res is None:
                 raise HTTPException(
@@ -38,7 +38,7 @@ class SubcategoryController:
         )
 
     async def get_subcategory_by_id(
-        self, subcategory_id: int, language: str
+            self, subcategory_id: int, language: str
     ) -> Optional[SubcategoryResponseSchema]:
         await check_language(language)
         return await self.__subcategory_repository.get_subcategory_by_id(
@@ -46,7 +46,7 @@ class SubcategoryController:
         )
 
     async def create_subcategory(
-        self, data: SubcategoryCreateSchema
+            self, data: SubcategoryCreateSchema
     ) -> SubcategoryCreateResponseSchema:
 
         translated_name = {
@@ -64,13 +64,13 @@ class SubcategoryController:
         )
 
     async def update_subcategory(
-        self, subcategory_id: int, data: SubcategoryUpdateSchema
+            self, subcategory_id: int, data: SubcategoryUpdateSchema
     ) -> SubcategoryCreateResponseSchema:
-        
+
         data.name = await translate_text(data.name)
         data.description = (
             await translate_text(data.description
-            ) if data.description else {}
+                                 ) if data.description else {}
         )
 
         return await self.__subcategory_repository.update_subcategory(

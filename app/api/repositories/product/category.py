@@ -30,7 +30,7 @@ class CategoryRepository:
         categories_with_product = []
 
         for category in categories:
-            product_count = sum(len(subcategory.products)for subcategory in category.subcategories)
+            product_count = sum(len(subcategory.products) for subcategory in category.subcategories)
             categories_with_product.append(
                 CategoryResponseSchema(
                     id=category.id,
@@ -42,7 +42,7 @@ class CategoryRepository:
             )
 
         return categories_with_product
-    
+
     async def get_categories(self, language):
         result = await self.__session.execute(
             select(Category)
@@ -54,7 +54,7 @@ class CategoryRepository:
         categories_with_product = []
 
         for category in categories:
-            product_count = sum(len(subcategory.products)for subcategory in category.subcategories)
+            product_count = sum(len(subcategory.products) for subcategory in category.subcategories)
             categories_with_product.append(
                 CategoryResponseSchema(
                     id=category.id,
@@ -68,16 +68,13 @@ class CategoryRepository:
         return categories_with_product
 
     async def get_warehouse_category_by_id(
-        self,
-        warehouse_id: int,
-        category_id: int,
-        language: str,
+            self,
+
+            category_id: int,
+            language: str,
     ) -> Optional[CategoryResponseSchema] | CategoryCreateResponseSchema:
         result = await self.__session.execute(
-            select(Category).where(
-                Category.warehouse_id == warehouse_id,
-                Category.id == category_id,
-            )
+            select(Category).where(Category.id == category_id)
         )
         category = result.scalar_one_or_none()
         if not category:
@@ -97,7 +94,7 @@ class CategoryRepository:
                 ),
             )
         return CategoryCreateResponseSchema.model_validate(category)
-    
+
     async def get_category_by_id(self, category_id, language):
         result = await self.__session.execute(
             select(Category).where(
@@ -124,7 +121,7 @@ class CategoryRepository:
         return CategoryCreateResponseSchema.model_validate(category)
 
     async def create_category(
-        self, warehouse_id, translated_name, translated_description, image
+            self, warehouse_id, translated_name, translated_description, image
     ) -> CategoryCreateResponseSchema:
 
         data = {
@@ -141,7 +138,7 @@ class CategoryRepository:
         return CategoryCreateResponseSchema.model_validate(category_instance)
 
     async def update_category(
-        self, category_id: int, data: CategoryUpdateSchema
+            self, category_id: int, data: CategoryUpdateSchema
     ) -> CategoryCreateResponseSchema:
         result = await self.__session.execute(
             select(Category).where(Category.id == category_id)

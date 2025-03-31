@@ -72,7 +72,7 @@ class Product(Base):
     description = Column(JSONB, default={}, nullable=True)  # search description
 
     product_information_id = Column(
-        Integer, ForeignKey("product_information.id"), nullable=False
+        Integer, ForeignKey("product_information.id"), nullable=True
     )
     product_information = relationship("ProductInformation", back_populates="products")
 

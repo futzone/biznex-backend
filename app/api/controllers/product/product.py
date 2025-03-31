@@ -28,11 +28,11 @@ from app.api.utils.check_language import check_language
 
 class ProductController:
     def __init__(
-        self,
-        repository: ProductRepository = Depends(),
-        warehouse_repository: WarehouseRepository = Depends(),
-        subcategory_repository: SubcategoryRepository = Depends(),
-        product_information_repository: ProductInformationRepository = Depends(),
+            self,
+            repository: ProductRepository = Depends(),
+            warehouse_repository: WarehouseRepository = Depends(),
+            subcategory_repository: SubcategoryRepository = Depends(),
+            product_information_repository: ProductInformationRepository = Depends(),
     ):
         self.repository = repository
         self.warehouse_repository = warehouse_repository
@@ -40,7 +40,7 @@ class ProductController:
         self.product_information_repository = product_information_repository
 
     async def get_products(
-        self, limit, offset, warehouse_id, language: str | None
+            self, limit, offset, warehouse_id, language: str | None
     ) -> Sequence[ProductResponseSchema | ProductLanguageResponseSchema]:
         await check_language(language)
         if warehouse_id:
@@ -50,27 +50,27 @@ class ProductController:
         return await self.repository.get_products(limit, offset, language)
 
     async def get_all_products(
-        self, warehouse_id: int, language: str | None
+            self, warehouse_id: int, language: str | None
     ):
         await check_language(language)
         return await self.repository.get_all_products(warehouse_id, language)
 
     async def get_little_products_left(
-        self, warehouse_id: int, limit: int, offset: int, language: str | None, amount: int
+            self, warehouse_id: int, limit: int, offset: int, language: str | None, amount: int
     ) -> Sequence[ProductResponseSchema | ProductLanguageResponseSchema]:
         await check_language(language)
         return await self.repository.get_little_products_left(
             warehouse_id, limit, offset, language, amount=amount
         )
-    
+
     async def get_product_variant_sales(
-        self, 
-        language: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        warehouse_id: Optional[int] = None,
-        limit: int = 50,
-        offset: int = 0
+            self,
+            language: str,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None,
+            warehouse_id: Optional[int] = None,
+            limit: int = 50,
+            offset: int = 0
     ) -> List[ProductVariantSalesResponse]:
         result = await self.repository.get_product_variant_sales(
             language=language,
@@ -86,10 +86,11 @@ class ProductController:
                 status_code=404,
                 detail="No sales data found for the specified criteria."
             )
-            
+
         return result
+
     async def get_product_by_id(
-        self, product_id: int, language: str | None
+            self, product_id: int, language: str | None
     ) -> MainProductResponseSchema | MainProductLanguageResponseSchema:
         await check_language(language)
         product = await self.repository.get_product_by_id(product_id, language)
@@ -100,11 +101,11 @@ class ProductController:
         return product
 
     async def search_products(
-        self,
-        filters: ProductFilterSchema,
-        language: str,
-        limit,
-        offset
+            self,
+            filters: ProductFilterSchema,
+            language: str,
+            limit,
+            offset
     ) -> ProductListResponse:
         if filters.min_price and filters.max_price and filters.min_price > filters.max_price:
             raise HTTPException(
@@ -121,7 +122,7 @@ class ProductController:
         )
 
     async def get_products_by_category_id(
-        self, limit, offset, category_id, language: str | None
+            self, limit, offset, category_id, language: str | None
     ) -> Sequence[ProductResponseSchema]:
         await check_language(language)
         products = await self.repository.get_products_by_category_id(
@@ -135,7 +136,7 @@ class ProductController:
         return products
 
     async def get_products_by_subcategory_id(
-        self, limit, offset, subcategory_id, language
+            self, limit, offset, subcategory_id, language
     ) -> Sequence[ProductResponseSchema]:
         await check_language(language)
         products = await self.repository.get_products_by_subcategory_id(
@@ -165,15 +166,9 @@ class ProductController:
         if subcategory is None:
             raise HTTPException(
                 status_code=404, detail="Subcategory not found")
-        product_information = await self.product_information_repository.get_info_by_id(
-            data.product_information_id
-        )
-        if product_information is None:
-            raise HTTPException(
-                status_code=404, detail="Product information not found")
 
     async def create_product(
-        self, data: ProductCreateSchema
+            self, data: ProductCreateSchema
     ) -> ProductLanguageResponseSchema:
         await self._is_valid_data_to_post(data)
         return await self.repository.create_product(data)
@@ -193,16 +188,6 @@ class ProductController:
             if subcategory is None:
                 raise HTTPException(
                     status_code=404, detail="Subcategory not found")
-        if data.product_information_id:
-            product_information = (
-                await self.product_information_repository.get_info_by_id(
-                    data.product_information_id
-                )
-            )
-            if product_information is None:
-                raise HTTPException(
-                    status_code=404, detail="Product information not found"
-                )
 
         if data.name:
             data.name = {
@@ -219,7 +204,7 @@ class ProductController:
             }
 
     async def update_product(
-        self, product_id: int, data: ProductUpdateSchema
+            self, product_id: int, data: ProductUpdateSchema
     ) -> ProductResponseSchema:
         await self._is_valid_data_update(data)
         return await self.repository.update_product(product_id, data)
@@ -236,7 +221,7 @@ class ProductController:
         return stats
 
     async def get_warehouse_stats(
-        self, warehouse_id: int, start_date: datetime, end_date: datetime
+            self, warehouse_id: int, start_date: datetime, end_date: datetime
     ):
         stats = await self.repository.get_warehouse_stats(
             warehouse_id, start_date, end_date

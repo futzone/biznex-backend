@@ -8,7 +8,7 @@ from app.api.schemas.product.size import SizeResponseSchema, SizeLanguageRespons
 class ProductCreateSchema(BaseModel):
     name: str
     description: Optional[str] = None
-    product_information_id: int
+    product_information_id: Optional[int] = None
     warehouse_id: int
     subcategory_id: int
 
@@ -139,7 +139,7 @@ class ProductResponseSchema(BaseModel):
     main_image: Optional[str] = None
     name: str
     description: Optional[str] = None
-    product_information_id: int
+    product_information_id: Optional[int] = None
     warehouse_id: int
     subcategory_name: str
     subcategory_id: int

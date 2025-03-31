@@ -45,7 +45,7 @@ class ProductVariantRepository:
         return resp
 
     async def _build_response(
-        self, variants: Union[ProductVariant, Sequence[ProductVariant]]
+            self, variants: Union[ProductVariant, Sequence[ProductVariant]]
     ) -> Union[ProductVariantResponseSchema, List[ProductVariantResponseSchema]]:
         if isinstance(variants, list):
             responses = []
@@ -72,7 +72,7 @@ class ProductVariantRepository:
         return await self._build_response(variants)
 
     async def get_variants_for_product(
-        self, product_id: int
+            self, product_id: int
     ) -> List[ProductVariantResponseSchema]:
         result = await self.__session.execute(
             select(ProductVariant)
@@ -128,16 +128,16 @@ class ProductVariantRepository:
             return None
         return await self._build_response(variant_obj)
 
-    async def  create_variant(
+    async def create_variant(
             self,
             product_id: int,
             data: ProductVariantCreateSchema,
             pictures: Optional[List[str]] = None,
     ) -> ProductVariantResponseSchema:
-        
+
         if data.barcode == 0:
             data.barcode = await self._generate_unique_barcode()
-        
+
         barcode_query = select(ProductVariant).where(ProductVariant.barcode == data.barcode)
         existing_variant = await self.__session.execute(barcode_query)
         existing_variant = existing_variant.scalar_one_or_none()
@@ -200,7 +200,6 @@ class ProductVariantRepository:
         await self.__session.commit()
         await self.__session.refresh(variant_obj)
 
-
         if pictures:
             await self._add_pictures(variant_obj, pictures)
 
@@ -209,14 +208,12 @@ class ProductVariantRepository:
     async def delete_variant(self, product_id: int, variant_id: int) -> None:
         result = await self.__session.execute(
             select(ProductVariant).where(
-                ProductVariant.id == variant_id, ProductVariant.product_id == product_id
+                ProductVariant.id == variant_id
             )
         )
         variant_obj = result.scalar_one_or_none()
-        if not variant_obj:
-            raise HTTPException(
-                status_code=404, detail="Variant not found or product mismatch"
-            )
+        if variant_obj is None:
+            raise HTTPException(status_code=404, detail="Variant not found or product mismatch")
 
         await self.__session.delete(variant_obj)
         await self.__session.commit()
@@ -224,7 +221,7 @@ class ProductVariantRepository:
     async def _generate_unique_barcode(self) -> int:
         while True:
             new_barcode = random.randint(100000000000, 999999999999)
-            
+
             barcode_query = select(ProductVariant).where(ProductVariant.barcode == new_barcode)
             existing_variant = await self.__session.execute(barcode_query)
             existing_variant = existing_variant.scalar_one_or_none()

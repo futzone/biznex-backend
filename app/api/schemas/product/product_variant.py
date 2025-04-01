@@ -86,6 +86,7 @@ class ProductVariantResponseSchema(BaseModel):
     current_price: float
     old_price: Optional[float] = None
     discount: Optional[float] = None
+    weight: Optional[float] = None
     is_main: bool
     amount: float
 

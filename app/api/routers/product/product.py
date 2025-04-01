@@ -459,7 +459,7 @@ async def update_variant(
             color_id=color_id,
             size_id=size_id,
             measure_id=measure_id,
-            weight=weight,
+            weight=weight if weight > 0 else None,
         )
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))

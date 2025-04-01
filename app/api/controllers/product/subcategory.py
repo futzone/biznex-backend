@@ -28,7 +28,7 @@ class SubcategoryController:
     ) -> Sequence[SubcategoryResponseSchema] | SubcategoryCreateResponseSchema:
         if category_id is not None:
             res = await self.__category_repository.get_warehouse_category_by_id(
-                category_id, language
+                category_id, language, warehouse_id
             )
             if res is None:
                 raise HTTPException(

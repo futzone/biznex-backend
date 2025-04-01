@@ -72,10 +72,16 @@ class CategoryRepository:
 
             category_id: int,
             language: str,
+            warehouse_id: None
     ) -> Optional[CategoryResponseSchema] | CategoryCreateResponseSchema:
-        result = await self.__session.execute(
-            select(Category).where(Category.id == category_id)
-        )
+        if warehouse_id is None:
+            result = await self.__session.execute(
+                select(Category).where(Category.id == category_id)
+            )
+        else:
+            result = await self.__session.execute(
+                select(Category).where(Category.id == category_id, Category.warehouse_id == warehouse_id)
+            )
         category = result.scalar_one_or_none()
         if not category:
             raise HTTPException(

@@ -99,3 +99,21 @@ class ProductVariantResponseSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+from typing import Optional, List
+from pydantic import BaseModel
+
+class ProductVariantUpdateSchemaNew(BaseModel):
+    barcode: Optional[int] = None
+    come_in_price: Optional[float] = None
+    current_price: Optional[float] = None
+    old_price: Optional[float] = None
+    discount: Optional[float] = None
+    is_main: Optional[bool] = None
+    amount: Optional[float] = None
+    weight: Optional[float] = None
+    color_id: Optional[int] = None
+    size_id: Optional[int] = None
+    measure_id: Optional[int] = None
+    pictures: Optional[List[str]] = None

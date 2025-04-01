@@ -37,7 +37,7 @@ from app.api.schemas.product.product import (
 from app.api.schemas.product.product_variant import (
     ProductVariantCreateSchema,
     ProductVariantUpdateSchema,
-    ProductVariantResponseSchema,
+    ProductVariantResponseSchema, ProductVariantUpdateSchemaNew,
 )
 from app.api.utils.permission_checker import check_permission
 from app.api.utils.user import AuthUtils
@@ -422,18 +422,7 @@ async def update_variant(
         request: Request,
         product_id: int,
         variant_id: int,
-        barcode: Optional[int] = Form(None),
-        come_in_price: Optional[float] = Form(None),
-        current_price: Optional[float] = Form(None),
-        old_price: Optional[float] = Form(None),
-        discount: Optional[float] = Form(None),
-        is_main: Optional[bool] = Form(None),
-        amount: Optional[float] = Form(None),
-        weight: Optional[float] = Form(None),
-        color_id: Optional[int] = Form(None),
-        size_id: Optional[int] = Form(None),
-        measure_id: Optional[int] = Form(None),
-        pictures: List[str] = Form(None),
+        model: ProductVariantUpdateSchemaNew,
         controller: ProductVariantController = Depends(),
         session: AsyncSession = Depends(get_general_session),
         current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
@@ -449,22 +438,22 @@ async def update_variant(
 
     try:
         data = ProductVariantUpdateSchema(
-            barcode=barcode,
-            come_in_price=come_in_price,
-            current_price=current_price,
-            old_price=old_price,
-            discount=discount,
-            is_main=is_main,
-            amount=amount,
-            color_id=color_id,
-            size_id=size_id,
-            measure_id=measure_id,
-            weight=weight if weight > 0 else None,
+            barcode=model.barcode,
+            come_in_price=model.come_in_price,
+            current_price=model.current_price,
+            old_price=model.old_price,
+            discount=model.discount,
+            is_main=model.is_main,
+            amount=model.amount,
+            color_id=model.color_id,
+            size_id=model.size_id,
+            measure_id=model.measure_id,
+            weight=model.weight,
         )
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    return await controller.update_variant(product_id, variant_id, data, pictures)
+    return await controller.update_variant(product_id, variant_id, data, model.pictures)
 
 
 @router.delete(

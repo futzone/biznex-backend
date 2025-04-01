@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import ENUM
 from app.api.schemas.order import OrderStatusEnum, OrderTypeEnum
 from app.core.models.base import Base
 from app.core.models.enums import AdminOrderStatusEnum, PaymentMethodEnum
+from utils.time_utils import now_time
 
 
 class Order(Base):
@@ -49,7 +50,7 @@ class OrderItem(Base):
 
     product = relationship("Product", back_populates="orders")
 
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<OrderItem id={self.id} order_id={self.order_id}>"
@@ -69,8 +70,8 @@ class AdminOrder(Base):
     warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
     payment_type = Column(ENUM(PaymentMethodEnum, name="payment_type"), nullable=False, default="cash")
 
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=now_time(), nullable=False)
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time(), nullable=False)
     canceled_at = Column(DateTime, default=None, nullable=True)
 
     admin = relationship("AdminUser", foreign_keys=[by], back_populates="orders")
@@ -96,8 +97,8 @@ class AdminOrderItem(Base):
     total_amount = Column(DECIMAL(10, 2), nullable=False)
     total_amount_with_discount = Column(DECIMAL(10, 2), nullable=True, default=0)
 
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=now_time(), nullable=False)
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time(), nullable=False)
 
     order = relationship("AdminOrder", back_populates="items")
     product_variant = relationship("ProductVariant")

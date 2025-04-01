@@ -14,6 +14,8 @@ from app.api.utils.user import AuthUtils
 from app.core import settings
 from fastapi import status
 
+from utils.time_utils import now_time
+
 settings = settings.get_settings()
 
 
@@ -44,7 +46,7 @@ class AuthController:
         )
 
         code = str(random.randint(100000, 999999))
-        expired_at = datetime.utcnow() + timedelta(minutes=10)
+        expired_at = now_time() + timedelta(minutes=10)
 
         await sms_repo.create_sms_code(
             user_id=user.id, code=code, expired_at=expired_at
@@ -272,7 +274,7 @@ class AuthController:
             raise HTTPException(status_code=404, detail="User not found")
 
         code = str(random.randint(100000, 999999))
-        expired_at = datetime.utcnow() + timedelta(minutes=10)
+        expired_at = now_time() + timedelta(minutes=10)
 
         await sms_repo.create_sms_code(
             user_id=user.id, code=code, expired_at=expired_at

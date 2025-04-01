@@ -9,6 +9,7 @@ from typing import List
 from database.chat_history_database import ChatHistoryDB
 from models.chat_history_model import ChatMessage
 from utils.message_generator import generate_response
+from utils.time_utils import now_time
 
 logger = logging.getLogger(__name__)
 from models.chat_history_model import ChatHistoryModel
@@ -29,13 +30,13 @@ async def send_message(user_id: int, message: ChatMessage):
     history_db = ChatHistoryDB()
     chat_message = ChatHistoryModel(
         user_id=user_id, message=message.message,
-        is_bot=False, timestamp=datetime.datetime.utcnow()
+        is_bot=False, timestamp=now_time()
     )
     await history_db.create_message(message=chat_message)
     message_reply = generate_response(message.message)
     chat_message_bot = ChatHistoryModel(
         user_id=user_id, message=message_reply,
-        is_bot=True, timestamp=datetime.datetime.utcnow()
+        is_bot=True, timestamp=now_time()
     )
     await history_db.create_message(message=chat_message_bot)
 

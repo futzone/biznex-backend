@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from models.user_order_model import UserOrder
+from utils.time_utils import now_time
 
 
 class UserOrderDB:
@@ -36,7 +37,7 @@ class UserOrderDB:
                 """
                 return await conn.fetchval(
                     query, order.user_id, order.status, order.type, order.total_amount,
-                    datetime.utcnow(), datetime.utcnow(), order.canceled_at
+                    now_time(), now_time(), order.canceled_at
                 )
 
     async def update_order(self, order_id: int, order: UserOrder):
@@ -49,7 +50,7 @@ class UserOrderDB:
                 """
                 await conn.execute(
                     query, order.user_id, order.status, order.type, order.total_amount,
-                    datetime.utcnow(), order.canceled_at, order_id
+                    now_time(), order.canceled_at, order_id
                 )
                 return {"message": "Order updated successfully"}
 

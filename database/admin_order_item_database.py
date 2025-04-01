@@ -2,6 +2,7 @@ from database.init import pool
 from datetime import datetime
 
 from models.admin_order_item_model import AdminOrderItemModel
+from utils.time_utils import now_time
 
 
 class AdminOrderItemDB:
@@ -20,7 +21,7 @@ class AdminOrderItemDB:
                 return await conn.fetchval(
                     query, order_item.order_id, order_item.product_variant_id, order_item.quantity,
                     order_item.price_per_unit, order_item.total_amount, order_item.total_amount_with_discount,
-                    order_item.price_with_discount, datetime.utcnow(), datetime.utcnow(), order_item.notes
+                    order_item.price_with_discount, now_time(), now_time(), order_item.notes
                 )
 
     async def update_order_item(self, order_item_id: int, order_item: AdminOrderItemModel):
@@ -35,7 +36,7 @@ class AdminOrderItemDB:
                 await conn.execute(
                     query, order_item.order_id, order_item.product_variant_id, order_item.quantity,
                     order_item.price_per_unit, order_item.total_amount, order_item.total_amount_with_discount,
-                    order_item.price_with_discount, datetime.utcnow(), order_item.notes, order_item_id
+                    order_item.price_with_discount, now_time(), order_item.notes, order_item_id
                 )
                 return {"message": "Order item updated successfully"}
 

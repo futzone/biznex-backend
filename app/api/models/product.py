@@ -1,20 +1,19 @@
-from datetime import datetime
 from sqlalchemy import (
     Column,
     DateTime,
     Integer,
     String,
     Table,
-    Text,
     Float,
     Boolean,
     ForeignKey,
     BigInteger,
-    func,
 )
 from sqlalchemy.orm import relationship
 from app.core.models.base import Base
 from sqlalchemy.dialects.postgresql import JSONB
+
+from utils.time_utils import now_time
 
 banner_products = Table(
     'banner_products',
@@ -97,8 +96,8 @@ class Product(Base):
         cascade="all, delete-orphan"
     )
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Product id={self.id} name={self.name}>"
@@ -124,8 +123,8 @@ class ProductInformation(Base):
     warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
     warehouse = relationship("Warehouse", back_populates="product_information")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<ProductInformation id={self.id} type={self.product_type} brand={self.brand}>"
@@ -155,8 +154,8 @@ class Rating(Base):
         "RatingPicture", back_populates="rating", cascade="all, delete-orphan"
     )
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Rating id={self.id} rating={self.rating}>"
@@ -172,8 +171,8 @@ class RatingPicture(Base):
     # path to the image file on disk
     image_path = Column(String(255), nullable=False)
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<RatingPicture id={self.id} rating_id={self.rating_id}>"
@@ -189,8 +188,8 @@ class Wishlist(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     product = relationship("Product", back_populates="wishlists")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Wishlist id={self.id} user={self.user_id} product={self.product_id}>"
@@ -208,8 +207,8 @@ class Size(Base):
     warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
     warehouse = relationship("Warehouse", back_populates="sizes")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Size id={self.id} size={self.size}>"
@@ -224,8 +223,8 @@ class Color(Base):
 
     product_variants = relationship("ProductVariant", back_populates="color")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Color id={self.id} name={self.name}>"
@@ -239,8 +238,8 @@ class Measure(Base):
 
     product_variants = relationship("ProductVariant", back_populates="measure")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Measure id={self.id} name={self.name}>"
@@ -280,8 +279,8 @@ class ProductVariant(Base):
         "ProductImage", back_populates="product_variant", cascade="all, delete-orphan"
     )
 
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<ProductVariant id={self.id} product_id={self.product_id}>"
@@ -305,8 +304,8 @@ class Promotion(Base):
         back_populates="promotions"
     )
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=now_time())
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
 
 # Add relationship to ProductVariant model
@@ -330,8 +329,8 @@ class ProductImage(Base):
     image = Column(String(255), nullable=False)
     is_main = Column(Boolean, default=False)
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<ProductImage id={self.id} variant={self.product_variant_id}>"
@@ -356,8 +355,8 @@ class Banner(Base):
 
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Banner id={self.id} title={self.title}>"

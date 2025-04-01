@@ -2,6 +2,7 @@ from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, func, Bool
 from sqlalchemy.orm import relationship
 
 from app.core.models.base import Base
+from utils.time_utils import now_time
 
 
 class Device(Base):
@@ -15,8 +16,8 @@ class Device(Base):
     device_info = Column(String(255), nullable=True)
 
     user = relationship("User", back_populates="devices")
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Device id={self.id} key={self.key}>"

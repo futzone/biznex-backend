@@ -14,6 +14,7 @@ from app.api.models.product import Promotion, promotion_product_variants
 from app.api.schemas.order import AdminOrderItemResponse, AdminOrderItemReturnSchema, AdminOrderUpdate, AdminProductVariantResponse, OrderItemRequest
 from app.core.databases.postgres import get_general_session
 from app.core.models.enums import AdminOrderStatusEnum, PaymentMethodEnum
+from utils.time_utils import now_time
 
 
 class AdminOrderItemRepository:
@@ -362,7 +363,7 @@ class AdminOrderItemRepository:
         admin_order.user_phone = data.user_phone if data.user_phone else admin_order.user_phone
         
         admin_order.final_amount = admin_order.total_amount_with_discount if data.with_discount else admin_order.total_amount
-        admin_order.updated_at = datetime.utcnow()
+        admin_order.updated_at = now_time()
         
         await self.__session.commit()
         return {

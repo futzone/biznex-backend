@@ -17,6 +17,8 @@ from app.core.models.base import Base
 from app.core.models.enums import WarehouseApplicationStatus
 from sqlalchemy.dialects.postgresql import JSONB
 
+from utils.time_utils import now_time
+
 admin_warehouse_roles = Table(
     "admin_warehouse_roles",
     Base.metadata,
@@ -51,8 +53,8 @@ class AdminWarehouse(Base):
     )
     warehouse = relationship("Warehouse", back_populates="roles")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
 
 class Warehouse(Base):
@@ -87,8 +89,8 @@ class Warehouse(Base):
     warehouse_subcategories = relationship("WarehouseSubcategory", back_populates="warehouse")
     warehouse_categories = relationship("WarehouseCategory", back_populates="warehouse")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     @property
     def subcategories(self):
@@ -164,8 +166,8 @@ class WarehouseApplication(Base):
     warehouse = relationship(
         "Warehouse", back_populates="warehouse_applications")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<WarehouseApplication id={self.id} phone_number={self.phone_number} status={self.status}>"

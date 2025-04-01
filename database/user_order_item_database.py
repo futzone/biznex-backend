@@ -1,5 +1,5 @@
-from datetime import datetime
 from models.user_order_model import UserOrderItem
+from utils.time_utils import now_time
 
 
 class UserOrderItemDB:
@@ -32,7 +32,7 @@ class UserOrderItemDB:
                 """
                 return await conn.fetchval(
                     query, item.order_id, item.product_id, item.quantity, item.total_amount,
-                    datetime.utcnow(), datetime.utcnow()
+                    now_time(), now_time()
                 )
 
     async def update_order_item(self, item_id: int, item: UserOrderItem):
@@ -45,7 +45,7 @@ class UserOrderItemDB:
                 """
                 await conn.execute(
                     query, item.order_id, item.product_id, item.quantity, item.total_amount,
-                    datetime.utcnow(), item_id
+                    now_time(), item_id
                 )
                 return {"message": "Order item updated successfully"}
 

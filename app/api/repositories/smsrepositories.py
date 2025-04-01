@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from datetime import datetime
 from app.api.models import SMSCode
+from utils.time_utils import now_time
 
 
 class SMSRepository:
@@ -12,7 +13,7 @@ class SMSRepository:
         sms_code = SMSCode(
             user_id=user_id,
             code=code,
-            created_at=datetime.utcnow(),
+            created_at=now_time(),
             expired_at=expired_at,
             is_used=False,
         )
@@ -27,7 +28,7 @@ class SMSRepository:
                     SMSCode.user_id == user_id,
                     SMSCode.code == code,
                     SMSCode.is_used == False,
-                    SMSCode.expired_at > datetime.utcnow(),
+                    SMSCode.expired_at > now_time(),
                 )
             )
         )

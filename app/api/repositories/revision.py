@@ -10,7 +10,7 @@ from app.api.models.revision import Revision, RevisionItem
 from app.api.models.user import AdminUser
 from app.api.schemas.revision import CreateRevisionSchema, RevisionItemResponse
 from app.core.models.enums import RevisionStatus
-
+from utils.time_utils import now_time
 
 
 class RevisionRepository:
@@ -104,7 +104,7 @@ class RevisionRepository:
             item.actual_quantity = actual_quantity
             item.difference = actual_quantity - system_quantity
             item.notes = notes
-            item.scanned_at = datetime.utcnow()
+            item.scanned_at = now_time()
         else:
             item = RevisionItem(
                 revision_id=revision_id,
@@ -150,7 +150,7 @@ class RevisionRepository:
             variant.amount = item.actual_quantity
 
         revision.status = RevisionStatus.completed
-        revision.completed_at = datetime.utcnow()
+        revision.completed_at = now_time()
         revision.completed_by = admin_id
 
         await self.__session.commit()
@@ -163,7 +163,7 @@ class RevisionRepository:
             return None
 
         revision.status = RevisionStatus.cancelled
-        revision.cancelled_at = datetime.utcnow()
+        revision.cancelled_at = now_time()
         revision.cancelled_by = admin_id
 
         await self.__session.commit()

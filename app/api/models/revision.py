@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 from app.core.models.base import Base
 from app.core.models.enums import RevisionStatus
-
+from utils.time_utils import now_time
 
 
 class Revision(Base):
@@ -14,7 +14,7 @@ class Revision(Base):
     id = Column(Integer, primary_key=True)
     warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
     status = Column(ENUM(RevisionStatus), default=RevisionStatus.created)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=now_time())
     completed_at = Column(DateTime, nullable=True)
     cancelled_at = Column(DateTime, nullable=True)
     created_by = Column(Integer, ForeignKey("admin_users.id"), nullable=False)
@@ -40,7 +40,7 @@ class RevisionItem(Base):
     actual_quantity = Column(Numeric(10, 2), nullable=False)
     difference = Column(Numeric(10, 2), nullable=False)
     notes = Column(String, nullable=True)
-    scanned_at = Column(DateTime, default=datetime.utcnow)
+    scanned_at = Column(DateTime, default=now_time())
     
     # Relationships
     revision = relationship("Revision", back_populates="items")

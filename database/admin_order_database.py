@@ -2,6 +2,7 @@ from datetime import datetime
 
 from database.init import pool
 from models.admin_order_model import AdminOrderModel
+from utils.time_utils import now_time
 
 
 class AdminOrderDB:
@@ -18,9 +19,9 @@ class AdminOrderDB:
                 RETURNING id;
                 """
                 return await conn.fetchval(
-                    query, order.by, order.seller, order.status, datetime.utcnow(), order.canceled_at,
+                    query, order.by, order.seller, order.status, now_time(), order.canceled_at,
                     order.total_amount_with_discount, order.total_amount, order.warehouse_id,
-                    order.payment_type, datetime.utcnow(), order.user_name, order.user_phone, order.notes
+                    order.payment_type, now_time(), order.user_name, order.user_phone, order.notes
                 )
 
     async def update_order(self, order_id: int, order: AdminOrderModel):
@@ -34,7 +35,7 @@ class AdminOrderDB:
                 WHERE id = $13;
                 """
                 await conn.execute(
-                    query, order.by, order.seller, order.status, datetime.utcnow(), order.canceled_at,
+                    query, order.by, order.seller, order.status, now_time(), order.canceled_at,
                     order.total_amount_with_discount, order.total_amount, order.warehouse_id,
                     order.payment_type, order.user_name, order.user_phone, order.notes, order_id
                 )

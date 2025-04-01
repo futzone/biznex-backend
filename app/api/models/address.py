@@ -10,6 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.core.models.base import Base
+from utils.time_utils import now_time
 
 
 class Address(Base):
@@ -27,8 +28,8 @@ class Address(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="addresses")
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Address id={self.id} title={self.title}>"

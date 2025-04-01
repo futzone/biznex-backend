@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from enum import Enum as PyEnum
 from app.core.models.base import Base
+from utils.time_utils import now_time
 
 
 class ReportStatusEnum(str, PyEnum):
@@ -23,8 +24,8 @@ class Report(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     status = Column(Enum(ReportStatusEnum), nullable=False)
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     def __repr__(self):
         return f"<Report id={self.id} title={self.title} status={self.status} user_id={self.user_id}>"

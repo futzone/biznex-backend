@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 import random
-from fastapi import Depends, HTTPException, status
-from app.api.models.user import SMSCode, User
+from fastapi import Depends
+from app.api.models.user import SMSCode
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.databases.postgres import get_general_session
+from utils.time_utils import now_time
 
 
 class SMSCodeService:
@@ -12,7 +13,7 @@ class SMSCodeService:
 
     async def create_sms_code(self, user_id: int):
         code = random.randint(100000, 999999)
-        expired_at = datetime.utcnow() + timedelta(minutes=2)
+        expired_at = now_time() + timedelta(minutes=2)
         sms_code = SMSCode(user_id=user_id, code=code, expired_at=expired_at)
 
         self.db.add(sms_code)
@@ -35,7 +36,7 @@ class SMSCodeService:
         if (
             sms_code
             and sms_code.code == code
-            and sms_code.expired_at > datetime.utcnow()
+            and sms_code.expired_at > now_time()
         ):
             return True
         return False

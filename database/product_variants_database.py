@@ -1,5 +1,6 @@
 from datetime import datetime
 from models.product_variant_model import ProductVariantModel
+from utils.time_utils import now_time
 
 
 class ProductVariantsDB:
@@ -18,7 +19,7 @@ class ProductVariantsDB:
                 return await conn.fetchval(
                     query, variant.barcode, variant.product_id, variant.come_in_price, variant.current_price,
                     variant.old_price, variant.discount, variant.is_main, variant.amount, variant.weight,
-                    variant.color_id, variant.size_id, variant.measure_id, datetime.utcnow(), datetime.utcnow()
+                    variant.color_id, variant.size_id, variant.measure_id, now_time(), now_time()
                 )
 
     async def update_variant(self, variant_id: int, variant: ProductVariantModel):
@@ -33,7 +34,7 @@ class ProductVariantsDB:
                 await conn.execute(
                     query, variant.barcode, variant.product_id, variant.come_in_price, variant.current_price,
                     variant.old_price, variant.discount, variant.is_main, variant.amount, variant.weight,
-                    variant.color_id, variant.size_id, variant.measure_id, datetime.utcnow(), variant_id
+                    variant.color_id, variant.size_id, variant.measure_id, now_time(), variant_id
                 )
                 return {"message": "Variant updated successfully"}
 

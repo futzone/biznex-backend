@@ -14,19 +14,21 @@ from sqlalchemy.sql import text
 
 from app.api.models.order import AdminOrder
 from app.core.models.base import Base
+from utils.time_utils import now_time
 from .warehouse import admin_warehouse_roles
 
 
 class ChatHistory(Base):
     __tablename__ = "chat_history"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False)
     message = Column(String, nullable=False)
     is_bot = Column(Boolean, default=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=now_time(), index=True)
 
     user = relationship("AdminUser", back_populates="chats")
+
 
 class User(Base):
     __tablename__ = "users"
@@ -57,13 +59,13 @@ class User(Base):
     def __eq__(self, other):
         return self.id == other.id
 
+
 class UserDB(Base):
     __tablename__ = "user_db"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     email = Column(String, nullable=False)
-
 
 
 class SMSCode(Base):
@@ -72,9 +74,9 @@ class SMSCode(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     code = Column(String(6), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow())
+    created_at = Column(DateTime, default=now_time())
     expired_at = Column(
-        DateTime, default=lambda: datetime.utcnow() + timedelta(minutes=10)
+        DateTime, default=lambda: now_time() + timedelta(minutes=10)
     )
     is_used = Column(Boolean, default=False)
 
@@ -91,8 +93,8 @@ class AdminUser(Base):
     profile_picture = Column(String(255), nullable=True)
     is_global_admin = Column(Boolean, default=False)
 
-    created_at = Column(DateTime, default=func.now())  # Yaratilgan vaqt
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=now_time())  # Yaratilgan vaqt
+    updated_at = Column(DateTime, default=now_time(), onupdate=now_time())
 
     orders = relationship("AdminOrder", foreign_keys=[AdminOrder.by], back_populates="admin")
     seller_orders = relationship("AdminOrder", foreign_keys=[AdminOrder.seller], back_populates="seller_admin")

@@ -18,8 +18,9 @@ class SubcategoryRepository:
         self.__session = session
 
     async def get_subcategories(
-        self, category_id: int | None, language: str
+            self, category_id: int | None, language: str
     ) -> Sequence[SubcategoryResponseSchema]:
+
         if category_id is not None:
             result = await self.__session.execute(
                 select(Subcategory).where(Subcategory.category_id == category_id)
@@ -42,9 +43,9 @@ class SubcategoryRepository:
         ]
 
     async def get_subcategory_by_id(
-        self,
-        subcategory_id: int,
-        language: str,
+            self,
+            subcategory_id: int,
+            language: str,
     ) -> Optional[SubcategoryResponseSchema]:
         result = await self.__session.execute(
             select(Subcategory).where(Subcategory.id == subcategory_id)
@@ -67,10 +68,10 @@ class SubcategoryRepository:
         return SubcategoryCreateResponseSchema.model_validate(subcategory)
 
     async def create_subcategory(
-        self,
-        translated_name,
-        translated_description,
-        category_id,
+            self,
+            translated_name,
+            translated_description,
+            category_id,
     ) -> SubcategoryCreateResponseSchema:
 
         data = {
@@ -86,7 +87,7 @@ class SubcategoryRepository:
         return SubcategoryCreateResponseSchema.model_validate(subcategory_instance)
 
     async def update_subcategory(
-        self, subcategory_id: int, data: SubcategoryUpdateSchema
+            self, subcategory_id: int, data: SubcategoryUpdateSchema
     ) -> SubcategoryCreateResponseSchema:
         result = await self.__session.execute(
             select(Subcategory).where(Subcategory.id == subcategory_id)

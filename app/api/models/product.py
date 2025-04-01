@@ -16,7 +16,6 @@ from sqlalchemy.orm import relationship
 from app.core.models.base import Base
 from sqlalchemy.dialects.postgresql import JSONB
 
-
 banner_products = Table(
     'banner_products',
     Base.metadata,
@@ -30,6 +29,7 @@ promotion_product_variants = Table(
     Column('promotion_id', Integer, ForeignKey('promotions.id')),
     Column('product_variant_id', Integer, ForeignKey('product_variants.id'))
 )
+
 
 class Category(Base):
     __tablename__ = "categories"
@@ -265,7 +265,7 @@ class ProductVariant(Base):
     color_id = Column(Integer, ForeignKey("colors.id", ondelete="SET NULL"), nullable=True)
     color = relationship("Color", back_populates="product_variants")
 
-    size_id = Column(Integer, ForeignKey("sizes.id",  ondelete="SET NULL"), nullable=True)
+    size_id = Column(Integer, ForeignKey("sizes.id", ondelete="SET NULL"), nullable=True)
     size = relationship("Size", back_populates="product_variants")
     promotions = relationship(
         "Promotion",
@@ -287,7 +287,6 @@ class ProductVariant(Base):
         return f"<ProductVariant id={self.id} product_id={self.product_id}>"
 
 
-
 class Promotion(Base):
     __tablename__ = "promotions"
 
@@ -298,7 +297,7 @@ class Promotion(Base):
     is_active = Column(Boolean, default=True)
     warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
     warehouse = relationship("Warehouse", back_populates="promotions")
-    
+
     # Many-to-many relationship with ProductVariant
     product_variants = relationship(
         "ProductVariant",
@@ -309,12 +308,14 @@ class Promotion(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
 # Add relationship to ProductVariant model
 ProductVariant.promotions = relationship(
     "Promotion",
     secondary=promotion_product_variants,
     back_populates="product_variants"
 )
+
 
 class ProductImage(Base):
     __tablename__ = "product_images"
@@ -345,14 +346,14 @@ class Banner(Base):
     image_url = Column(String, nullable=False)
     discount_percentage = Column(Float, nullable=False)
     is_active = Column(Boolean, default=True)
-    
+
     # Banner va ProductVariant o'rtasidagi ko'p-ko'plik bog'lanish
     product_variants = relationship(
         "ProductVariant",
         secondary=banner_products,
         backref="banners"
     )
-    
+
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=func.now())
@@ -360,12 +361,12 @@ class Banner(Base):
 
     def __repr__(self):
         return f"<Banner id={self.id} title={self.title}>"
-    
+
     def apply_discount_to_products(self):
         """Bannerdagi barcha productlarga discount qo'llash"""
         for variant in self.product_variants:
             if not variant.old_price:
                 variant.old_price = variant.current_price
-            
+
             variant.discount = self.discount_percentage
             variant.current_price = variant.old_price * (1 - self.discount_percentage / 100)

@@ -22,7 +22,7 @@ class ProductImageRepository:
         return [ProductImageResponseSchema.model_validate(i) for i in imgs]
 
     async def get_image_by_id(
-        self, image_id: int
+            self, image_id: int
     ) -> Optional[ProductImageResponseSchema]:
         result = await self.__session.execute(
             select(ProductImage).where(ProductImage.id == image_id)
@@ -33,7 +33,7 @@ class ProductImageRepository:
         return ProductImageResponseSchema.model_validate(i)
 
     async def create_image(
-        self, data: ProductImageCreateSchema
+            self, data: ProductImageCreateSchema
     ) -> ProductImageResponseSchema:
         img_obj = ProductImage(**data.model_dump())
         self.__session.add(img_obj)
@@ -42,7 +42,7 @@ class ProductImageRepository:
         return ProductImageResponseSchema.model_validate(img_obj)
 
     async def update_image(
-        self, image_id: int, data: ProductImageUpdateSchema
+            self, image_id: int, data: ProductImageUpdateSchema
     ) -> ProductImageResponseSchema:
         result = await self.__session.execute(
             select(ProductImage).where(ProductImage.id == image_id)
@@ -58,12 +58,14 @@ class ProductImageRepository:
         await self.__session.refresh(i)
         return ProductImageResponseSchema.model_validate(i)
 
-    async def delete_image(self, image_id: int) -> None:
+    async def delete_image(self, image_id: str, variant_id) -> None:
         result = await self.__session.execute(
-            select(ProductImage).where(ProductImage.id == image_id)
+            select(ProductImage).where(ProductImage.image == image_id, ProductImage.product_variant_id == variant_id)
         )
-        i = result.scalar_one_or_none()
-        if not i:
+        images = result.scalars().all()
+        if not images:
             raise HTTPException(404, "ProductImage not found")
-        await self.__session.delete(i)
+        for img in images:
+            await self.__session.delete(img)
         await self.__session.commit()
+

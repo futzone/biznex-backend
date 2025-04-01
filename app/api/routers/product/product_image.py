@@ -7,7 +7,7 @@ from app.api.models.user import AdminUser
 from app.api.schemas.product.product_image import (
     ProductImageCreateSchema,
     ProductImageUpdateSchema,
-    ProductImageResponseSchema,
+    ProductImageResponseSchema, ProductImageDelete,
 )
 from app.api.utils.permission_checker import check_permission
 from app.api.utils.user import AuthUtils
@@ -38,11 +38,11 @@ async def get_image(image_id: int, controller: ProductImageController = Depends(
     "/", response_model=ProductImageResponseSchema, status_code=status.HTTP_201_CREATED
 )
 async def create_image(
-    request: Request,
-    data: ProductImageCreateSchema,
-    controller: ProductImageController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        data: ProductImageCreateSchema,
+        controller: ProductImageController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
     warehouse_id = int(request.headers.get('id'))
     await check_permission(
@@ -62,12 +62,12 @@ async def create_image(
     status_code=status.HTTP_200_OK,
 )
 async def update_image(
-    request: Request,
-    image_id: int,
-    data: ProductImageUpdateSchema,
-    controller: ProductImageController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        image_id: int,
+        data: ProductImageUpdateSchema,
+        controller: ProductImageController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
     warehouse_id = int(request.headers.get('id'))
     await check_permission(
@@ -81,14 +81,15 @@ async def update_image(
     return await controller.update_image(image_id, data)
 
 
-@router.delete("/{image_id}/", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/remove", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_image(
-    request: Request,
-    image_id: int,
-    controller: ProductImageController = Depends(),
-    current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
-    session: AsyncSession = Depends(get_general_session),
+        request: Request,
+        model: ProductImageDelete,
+        controller: ProductImageController = Depends(),
+        current_admin: AdminUser = Depends(AuthUtils.get_current_admin_user),
+        session: AsyncSession = Depends(get_general_session),
 ):
+    print('delete image working')
     warehouse_id = int(request.headers.get('id'))
     await check_permission(
         session=session,
@@ -97,4 +98,4 @@ async def delete_image(
         model_name="product_image",
         action="delete",
     )
-    await controller.delete_image(image_id)
+    await controller.delete_image(model.path, model.variant_id)

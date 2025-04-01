@@ -33,6 +33,7 @@ class SubcategoryController:
             if res is None:
                 raise HTTPException(
                     status_code=404, detail="Category not found")
+
         return await self.__subcategory_repository.get_subcategories(
             category_id, language
         )

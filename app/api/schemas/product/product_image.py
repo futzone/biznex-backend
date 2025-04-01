@@ -24,3 +24,8 @@ class ProductImageResponseSchema(ProductImageCreateSchema):
 
     class Config:
         from_attributes = True
+
+
+class ProductImageDelete(BaseModel):
+    path: Optional[str] = None
+    variant_id: Optional[int] = None

@@ -32,5 +32,5 @@ class ProductImageController:
     ) -> ProductImageResponseSchema:
         return await self.__repo.update_image(image_id, data)
 
-    async def delete_image(self, image_id: int) -> None:
-        return await self.__repo.delete_image(image_id)
+    async def delete_image(self, image_id: str, variant_id) -> None:
+        return await self.__repo.delete_image(image_id, variant_id)

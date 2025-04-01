@@ -16,6 +16,7 @@ from app.api.routers.product.rating import router as rating_router
 from app.api.routers.product.rating_picture import router as rating_picture_router
 from app.api.routers.product.wishlist import router as wishlist_router
 from app.api.routers.product.size import router as size_router
+from app.api.routers.product.product_image import router as product_image_router
 from app.api.routers.product.color import router as color_router
 from app.api.routers.product.measure import router as measure_router
 from app.api.routers.product.product import router as product_router
@@ -152,9 +153,9 @@ def create_app() -> CORSMiddleware:
     v1_router.include_router(
         measure_router, prefix="/measure", tags=["Measure"]
     )
-    # v1_router.include_router(
-    #     product_image_router, prefix="/product-image", tags=["Product Image"]
-    # )
+    v1_router.include_router(
+        product_image_router, prefix="/product-image", tags=["Product Image"]
+    )
     v1_router.include_router(
         order_router, prefix="/order", tags=["Order"]
     )

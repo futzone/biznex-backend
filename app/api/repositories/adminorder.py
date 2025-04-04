@@ -236,6 +236,7 @@ class AdminOrderRepository:
                         )
 
                     product_variant.amount -= item_request.quantity
+                    self.__session.add(product_variant)
 
         await self.__session.commit()
         await self.__session.refresh(admin_order)

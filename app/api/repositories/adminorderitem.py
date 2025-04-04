@@ -66,11 +66,11 @@ class AdminOrderItemRepository:
                     barcode=str(item.product_variant.barcode),
                     current_price=product_variant.current_price,
                     main_image=main_image,
-                    color=product_variant.color.name.get(language, "") ,
+                    color=product_variant.color.name.get(language, ""),
                     color_hex=product_variant.color.hex_code if product_variant.color else "",
                     size=product_variant.size.size if product_variant.size else "",
                     measure=product_variant.measure.name if product_variant.measure else "",
-                    images=[img.image for img in item.product_variant.images] if item.product_variant.images else []  
+                    images=[img.image for img in item.product_variant.images] if item.product_variant.images else []
                 ),
                 quantity=item.quantity,
                 price_per_unit=item.price_per_unit,
@@ -82,7 +82,7 @@ class AdminOrderItemRepository:
                 created_at=item.created_at,
                 updated_at=item.updated_at,
             ))
-        
+
         return response
 
     async def get_active_promotion(self, product_variant_id: int) -> Optional[Promotion]:
@@ -100,11 +100,11 @@ class AdminOrderItemRepository:
         return result.scalar_one_or_none()
 
     async def add_items_to_order(
-        self, 
-        items: List[OrderItemRequest], 
-        order_id: int, 
-        language: str, 
-        warehouse_id: int
+            self,
+            items: List[OrderItemRequest],
+            order_id: int,
+            language: str,
+            warehouse_id: int
     ) -> List[AdminOrderItemResponse]:
         order = await self.__session.execute(
             select(AdminOrder).where(
@@ -115,21 +115,18 @@ class AdminOrderItemRepository:
             )
         )
         order = order.scalar_one_or_none()
-        
+
         if not order:
             raise HTTPException(status_code=404, detail="Open order not found")
-        
+
         responses = []
-        
-        if not isinstance(items, list):
-            items = [items]
-        
+
         for item_data in items:
             try:
                 barcode = item_data.barcode
                 quantity = item_data.quantity
                 custom_price = item_data.custom_price
-                
+
                 product_variant = await self.__session.execute(
                     select(ProductVariant)
                     .join(Product)
@@ -147,25 +144,32 @@ class AdminOrderItemRepository:
                         selectinload(ProductVariant.product).selectinload(Product.subcategory)
                     )
                 )
+
                 product_variant = product_variant.scalar_one_or_none()
-                
+
                 if not product_variant:
                     raise HTTPException(
                         status_code=404,
                         detail=f"Product variant with barcode {barcode} not found"
                     )
-                
+
+                if product_variant.amount < item_data.quantity:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Product variant count < order item quantity"
+                    )
+
                 active_promotion = await self.get_active_promotion(product_variant.id)
                 original_price = Decimal(str(product_variant.current_price))
                 discounted_price = original_price
-                
+
                 if custom_price is not None:
                     original_price = Decimal(str(custom_price))
                     discounted_price = original_price
                 if active_promotion:
                     discount_multiplier = Decimal(str((100 - active_promotion.discount) / 100))
                     discounted_price = (original_price * discount_multiplier).quantize(Decimal('0.01'))
-                
+
                 existing_item = await self.__session.execute(
                     select(AdminOrderItem).where(
                         and_(
@@ -185,7 +189,7 @@ class AdminOrderItemRepository:
                     )
                 )
                 existing_item = existing_item.scalar_one_or_none()
-                
+
                 if existing_item:
                     existing_item.quantity += quantity
                     if custom_price is not None:
@@ -194,10 +198,10 @@ class AdminOrderItemRepository:
                     existing_item.total_amount = existing_item.calculate_total()
                     existing_item.price_with_discount = discounted_price
                     existing_item.total_amount_with_discount = existing_item.calculate_total_with_discount()
-                    
+
                     order.total_amount += original_price * quantity
                     order.total_amount_with_discount += discounted_price * quantity
-                    
+
                     item_response = existing_item
                 else:
                     new_item = AdminOrderItem(
@@ -209,15 +213,15 @@ class AdminOrderItemRepository:
                         total_amount=original_price * quantity,
                         total_amount_with_discount=discounted_price * quantity
                     )
-                    
+
                     self.__session.add(new_item)
                     await self.__session.flush()
-                    
+
                     new_item.product_variant = product_variant
-                    
+
                     order.total_amount += original_price * quantity
                     order.total_amount_with_discount += discounted_price * quantity
-                    
+
                     item_response = new_item
 
                 if hasattr(item_response, 'product_variant') and item_response.product_variant:
@@ -227,20 +231,20 @@ class AdminOrderItemRepository:
                     item_response.product_variant = product_variant
                     response_item = AdminOrderItemResponse.from_order_item(item_response, language)
                     responses.append(response_item)
-                    
+
             except Exception as e:
                 raise HTTPException(
                     status_code=500,
                     detail=f"Failed to add item to order: {str(e)}"
                 )
         await self.__session.commit()
-        
+
         return responses
 
     async def return_order_item(
-        self,
-        order_item_id: int,
-        data: AdminOrderItemReturnSchema
+            self,
+            order_item_id: int,
+            data: AdminOrderItemReturnSchema
     ) -> AdminOrderItemResponse:
         query = (
             select(AdminOrderItem, ProductVariant, AdminOrder)
@@ -292,7 +296,6 @@ class AdminOrderItemRepository:
                 )
             )
 
-
             await self.__session.commit()
         except Exception as e:
             await self.__session.rollback()
@@ -300,8 +303,6 @@ class AdminOrderItemRepository:
                 status_code=500,
                 detail="Failed to process return: " + str(e)
             )
-
-
 
         updated_variant = await self.__session.execute(
             select(ProductVariant)
@@ -339,12 +340,12 @@ class AdminOrderItemRepository:
             )
             .options(selectinload(AdminOrder.items))
         )
-        
+
         admin_order = result.unique().scalars().first()
-        
+
         if not admin_order:
             raise HTTPException(status_code=404, detail="Order not found")
-        
+
         if data.status == AdminOrderStatusEnum.completed:
             for order_item in admin_order.items:
                 product_variant = await self.__session.get(ProductVariant, order_item.product_variant_id)
@@ -355,16 +356,16 @@ class AdminOrderItemRepository:
                             detail=f"Insufficient stock for product '{product_variant.id}'"
                         )
                     product_variant.amount -= float(order_item.quantity)
-        
+
         admin_order.status = AdminOrderStatusEnum(data.status)
         admin_order.seller = data.seller_id if data.seller_id else admin_order.seller
         admin_order.payment_type = PaymentMethodEnum(data.payment_type) if data.payment_type else PaymentMethodEnum.cash
         admin_order.user_name = data.user_name if data.user_name else admin_order.user_name
         admin_order.user_phone = data.user_phone if data.user_phone else admin_order.user_phone
-        
+
         admin_order.final_amount = admin_order.total_amount_with_discount if data.with_discount else admin_order.total_amount
         admin_order.updated_at = now_time()
-        
+
         await self.__session.commit()
         return {
             "message": "Order closed successfully",
@@ -465,7 +466,6 @@ class AdminOrderItemRepository:
                 status_code=500,
                 detail=f"Failed to update order item: {str(e)}"
             )
-
 
     async def delete_order_item(self, admin_id: int, order_item_id: int):
         query = (

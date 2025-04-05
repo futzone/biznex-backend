@@ -21,9 +21,12 @@ async def create_order(request: Request, model: UserOrderModel, controller: User
     return await OrderApiRouter.create_order(controller=controller, request=request, model=model, pool=pool)
 
 
-@router.get("/orders/{offset}/{limit}/{status}", response_model=None)
-async def get_order(request: Request, offset: int, limit: int, status: Optional[str] = None, controller: UserController = Depends(), pool: asyncpg.Pool = Depends(get_postgres)):
-    model = PaginationModel(offset=offset, limit=limit, status=status)
+@router.get("/orders", response_model=None)
+async def get_order(request: Request, controller: UserController = Depends(), pool: asyncpg.Pool = Depends(get_postgres)):
+    offset = request.headers.get('offset')
+    limit = request.headers.get('limit')
+    status = request.headers.get('status')
+    model = PaginationModel(offset=int(offset) if offset is not None else 0, limit=int(limit) if limit is not None else 10, status=status if status is not None else None)
     return await OrderApiRouter.get_user_orders(controller=controller, request=request, model=model, pool=pool)
 
 

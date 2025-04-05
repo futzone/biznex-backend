@@ -63,19 +63,25 @@ class OrderApiRouter:
             controller: UserController = Depends(),
             pool: asyncpg.Pool = Depends(get_postgres)
     ):
+        print(model.dict())
         user = await current_user(request=request, controller=controller)
+        print("user done")
         order_db = UserOrderDB(pool=pool)
         orders = await order_db.get_user_orders(user_id=user.id, status=model.status, limit=model.limit, offset=model.offset)
+        print("orders done")
         order_item_db = UserOrderItemDB(pool=pool)
         variant_db = ProductVariantsDB(pool=pool)
 
         response_list = []
         for order in orders:
+            print("order type: ", type(order))
             items_list = []
             items = await order_item_db.get_order_items(order_id=order.id)
             for item in items:
+                print("order item type: ", type(item))
                 variant = await variant_db.get_variant(variant_id=item.product_id)
                 item_map = item.to_map()
+                print("order item type: ", type(variant))
                 item_map['variant'] = variant.to_map()
                 items_list.append(item_map)
 
@@ -83,4 +89,4 @@ class OrderApiRouter:
             order_map['items'] = items_list
             response_list.append(order_map)
 
-        return JSONResponse(content=response_list, status_code=201)
+        return JSONResponse(content=response_list, status_code=200)

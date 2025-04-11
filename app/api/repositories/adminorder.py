@@ -351,7 +351,7 @@ class AdminOrderRepository:
                 .selectinload(AdminOrderItem.product_variant)
                 .selectinload(ProductVariant.images)
             )
-            .order_by(AdminOrder.created_at.desc())
+            .order_by(AdminOrder.updated_at.desc())
             .limit(limit).offset(offset)
         )
 
